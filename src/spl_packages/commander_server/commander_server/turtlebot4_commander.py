@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
+import json
+import os
+from math import cos, radians, sin
+from typing import Tuple
+
 import rclpy
 import requests
-import json
-from typing import Tuple
-from math import sin, cos, radians
-from geometry_msgs.msg import PoseStamped
-from nav2_simple_commander.robot_navigator import BasicNavigator
-from nav2_msgs.action import NavigateToPose
-from nav2_msgs.action._navigate_to_pose import NavigateToPose_FeedbackMessage, NavigateToPose_GetResult_Response, NavigateToPose_SendGoal_Response
-from rclpy.duration import Duration
 from action_msgs.msg import GoalStatus
-
-
+from geometry_msgs.msg import PoseStamped
+from nav2_msgs.action import NavigateToPose
+from nav2_msgs.action._navigate_to_pose import (
+    NavigateToPose_FeedbackMessage, NavigateToPose_GetResult_Response,
+    NavigateToPose_SendGoal_Response)
+from nav2_simple_commander.robot_navigator import BasicNavigator
+from rclpy.duration import Duration
 
 X = Y = Theta = float
 Position = Tuple[X, Y, Theta]
@@ -29,12 +31,13 @@ class Turtlebot4_Commander(BasicNavigator):
 
         # self.timer = self.create_timer(0.5, self.commander)
 
-        self.turtlebot4_id: int = turtlebot4_id
+        self.turtlebot4_id: int = os.uname()[1]
         self.hostName: str = hostName
         self.serverPort: int = serverPort
         self.isExecuting: bool = False
         self.pose: PoseStamped = None
         self.timestep: int = 0
+<<<<<<< HEAD
 
         self.run()
 
@@ -47,6 +50,20 @@ class Turtlebot4_Commander(BasicNavigator):
         
         position = data.get("position")
         self.timestep = data.get("timestep")
+=======
+        print(f"Starting Commander Server:\nRobot ID: {self.turtlebot4_id}\nWebserver: {hostName}:{serverPort}")
+        self.run()
+
+
+
+    def run(self):
+    
+
+        data = self.get_request()
+        position = data.get("position")
+        self.timestep = data.get("timestep")
+
+>>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
         pose = self.getPoseStamped(position)
         self.send_goal(pose)
 
@@ -76,7 +93,10 @@ class Turtlebot4_Commander(BasicNavigator):
                 "timestep": self.timestep}
         
         json_data = json.dumps(data)
+<<<<<<< HEAD
 
+=======
+>>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
         r = None
         while r is None:
             try:
@@ -145,8 +165,12 @@ class Turtlebot4_Commander(BasicNavigator):
         eda = feedback.distance_remaining
         
         self.info("Pose: " + str([position.x, position.y]) + " eta: " + str(eta) + " eda: " + str(eda))
+<<<<<<< HEAD
         self.post_request(self
                           .pose, "Executing")
+=======
+        self.post_request(self.pose, "Executing")
+>>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
 
 
     def get_result_callback(self, future):

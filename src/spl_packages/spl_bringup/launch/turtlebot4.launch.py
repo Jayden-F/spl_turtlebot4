@@ -1,9 +1,11 @@
 import os
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.actions import (DeclareLaunchArgument, GroupAction,
+                            IncludeLaunchDescription)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import PushRosNamespace
 
 
@@ -27,8 +29,8 @@ def generate_launch_description():
     path_planner_package = get_package_share_directory(
         'path_planner_server')
 
-    cartographer_slam_package = get_package_share_directory(
-        'cartographer_slam')
+    # cartographer_slam_package = get_package_share_directory(
+    #     'cartographer_slam')
 
     rviz_package = get_package_share_directory("rviz2_server")
 

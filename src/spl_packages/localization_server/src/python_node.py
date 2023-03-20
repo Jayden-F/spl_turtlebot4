@@ -1,8 +1,8 @@
 import sys
+
 import rclpy
+from geometry_msgs.msg import PointStamped, PoseWithCovarianceStamped
 from rclpy.node import Node
-from geometry_msgs.msg import PoseWithCovarianceStamped
-from geometry_msgs.msg import PointStamped
 
 
 class Publisher(Node):
