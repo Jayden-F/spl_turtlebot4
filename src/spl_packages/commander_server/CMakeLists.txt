@@ -25,4 +25,6 @@ find_package(geometry_msgs REQUIRED)
 
 ament_python_install_package(${PROJECT_NAME})
 
+install(PROGRAMS commander_server/turtlebot4_commander.py DESTINATION lib/${PROJECT_NAME})
+
 ament_package()

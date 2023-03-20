@@ -69,8 +69,8 @@ def generate_launch_description():
 
     ld = LaunchDescription(ARGUMENTS)
     ld.add_action(navigation)
-    # ld.add_action(localization)
-    ld.add_action(mapping)
+    ld.add_action(localization)
+    # ld.add_action(mapping)
     ld.add_action(rviz)
 
     return ld
