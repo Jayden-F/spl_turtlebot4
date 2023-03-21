@@ -22,7 +22,7 @@ class Turtlebot4_Commander(BasicNavigator):
 
     def __init__(self, 
                  turtlebot4_id: int = 0,
-                 hostName: str = "192.168.0.204",
+                 hostName: str = "192.168.0.141",
                  serverPort: int = 8080
                 ):
     
