@@ -1,7 +1,0 @@
-setup.py
-commander_server/__init__.py
-commander_server/turtlebot4_commander.py
-commander_server.egg-info/PKG-INFO
-commander_server.egg-info/SOURCES.txt
-commander_server.egg-info/dependency_links.txt
-commander_server.egg-info/top_level.txt

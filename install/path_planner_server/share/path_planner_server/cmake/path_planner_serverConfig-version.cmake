@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/build/path_planner_server/ament_cmake_core/path_planner_serverConfig-version.cmake

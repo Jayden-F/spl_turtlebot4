@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/spl_packages/rviz2_server/launch/spl_rviz2.launch.py

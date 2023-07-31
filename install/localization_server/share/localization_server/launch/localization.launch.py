@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/spl_packages/localization_server/launch/localization.launch.py

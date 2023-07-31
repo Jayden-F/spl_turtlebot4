@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/nav2_straightline_planner/include/nav2_straightline_planner/straight_line_planner.hpp

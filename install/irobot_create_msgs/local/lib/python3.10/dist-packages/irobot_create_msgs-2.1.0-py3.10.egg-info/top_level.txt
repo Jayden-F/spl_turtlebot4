@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/build/irobot_create_msgs/ament_cmake_python/irobot_create_msgs/irobot_create_msgs.egg-info/top_level.txt

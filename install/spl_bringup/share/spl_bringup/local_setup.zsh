@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/build/spl_bringup/ament_cmake_environment_hooks/local_setup.zsh

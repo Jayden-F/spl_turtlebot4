@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/build/irobot_create_msgs/rosidl_generator_c/irobot_create_msgs/srv/detail/robot_power__type_support.h

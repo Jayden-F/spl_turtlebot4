@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/turtlebot4/turtlebot4_navigation/launch/localization.launch.py

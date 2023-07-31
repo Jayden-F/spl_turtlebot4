@@ -1,9 +1,0 @@
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/uninstall.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/turtlebot4_desktop_uninstall.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/test.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/edit_cache.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/list_install_components.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/install.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/install/local.dir
-/home/ubuntu/ros2_ws/build/turtlebot4_desktop/CMakeFiles/install/strip.dir

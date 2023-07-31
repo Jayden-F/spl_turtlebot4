@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_targets("TARGET_FILES" "/home/ubuntu/ros2_ws/build/execution_policy_server/turtlebot4_navigator" "TARGETS" "turtlebot4_navigator" "DESTINATION" "lib/execution_policy_server")

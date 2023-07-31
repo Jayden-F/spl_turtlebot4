@@ -1,9 +1,0 @@
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/uninstall.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/path_planner_server_uninstall.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/test.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/edit_cache.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/list_install_components.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/install.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/install/local.dir
-/home/ubuntu/ros2_ws/build/path_planner_server/CMakeFiles/install/strip.dir

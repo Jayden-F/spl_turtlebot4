@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/build/irobot_create_msgs/rosidl_typesupport_introspection_cpp/irobot_create_msgs/action/detail/navigate_to_position__rosidl_typesupport_introspection_cpp.hpp

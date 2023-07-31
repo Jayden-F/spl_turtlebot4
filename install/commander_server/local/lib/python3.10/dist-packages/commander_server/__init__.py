@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/spl_packages/commander_server/commander_server/__init__.py

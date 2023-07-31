@@ -1,6 +1,0 @@
-Invoking command in '/home/ubuntu/ros2_ws/build/rviz2_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/spl_packages/rviz2_server -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/install/rviz2_server
-Invoked command in '/home/ubuntu/ros2_ws/build/rviz2_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/spl_packages/rviz2_server -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/install/rviz2_server
-Invoking command in '/home/ubuntu/ros2_ws/build/rviz2_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/build/rviz2_server -- -j4 -l4
-Invoked command in '/home/ubuntu/ros2_ws/build/rviz2_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/build/rviz2_server -- -j4 -l4
-Invoking command in '/home/ubuntu/ros2_ws/build/rviz2_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/build/rviz2_server
-Invoked command in '/home/ubuntu/ros2_ws/build/rviz2_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/build/rviz2_server

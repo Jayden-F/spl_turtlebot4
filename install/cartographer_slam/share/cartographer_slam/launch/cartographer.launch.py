@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/cartographer_slam/launch/cartographer.launch.py

@@ -1,4 +1,0 @@
-source;share/execution_policy_server/local_setup.bash
-source;share/execution_policy_server/local_setup.dsv
-source;share/execution_policy_server/local_setup.sh
-source;share/execution_policy_server/local_setup.zsh
