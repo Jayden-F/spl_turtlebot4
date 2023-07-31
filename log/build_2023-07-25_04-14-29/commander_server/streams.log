@@ -1,0 +1,78 @@
+[0.070s] Invoking command in '/home/ubuntu/ros2_ws/build/commander_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/spl_packages/commander_server -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/install/commander_server
+[0.405s] -- The C compiler identification is GNU 11.3.0
+[0.763s] -- The CXX compiler identification is GNU 11.3.0
+[0.810s] -- Detecting C compiler ABI info
+[1.305s] -- Detecting C compiler ABI info - done
+[1.352s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.355s] -- Detecting C compile features
+[1.359s] -- Detecting C compile features - done
+[1.377s] -- Detecting CXX compiler ABI info
+[1.845s] -- Detecting CXX compiler ABI info - done
+[1.898s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.901s] -- Detecting CXX compile features
+[1.905s] -- Detecting CXX compile features - done
+[1.947s] -- Found ament_cmake: 1.3.5 (/opt/ros/humble/share/ament_cmake/cmake)
+[3.593s] -- Found Python3: /usr/bin/python3.10 (found version "3.10.6") found components: Interpreter 
+[4.121s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[4.674s] -- Found rclcpp: 16.0.5 (/opt/ros/humble/share/rclcpp/cmake)
+[5.238s] -- Found rosidl_generator_c: 3.1.5 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[5.311s] -- Found rosidl_adapter: 3.1.5 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[5.409s] -- Found rosidl_generator_cpp: 3.1.5 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[5.542s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[5.751s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[6.409s] -- Found rmw_implementation_cmake: 6.1.1 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[6.452s] -- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)
+[6.775s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[6.926s] -- Looking for pthread.h
+[7.826s] -- Looking for pthread.h - found
+[7.829s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[8.582s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[8.587s] -- Found Threads: TRUE  
+[9.790s] -- Found rclpy: 3.3.9 (/opt/ros/humble/share/rclpy/cmake)
+[9.823s] -- Found geometry_msgs: 4.2.3 (/opt/ros/humble/share/geometry_msgs/cmake)
+[11.725s] -- Configuring done
+[11.890s] -- Generating done
+[11.925s] -- Build files have been written to: /home/ubuntu/ros2_ws/build/commander_server
+[12.057s] Invoked command in '/home/ubuntu/ros2_ws/build/commander_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/spl_packages/commander_server -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/install/commander_server
+[12.062s] Invoking command in '/home/ubuntu/ros2_ws/build/commander_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/build/commander_server -- -j4 -l4
+[12.813s] Built target ament_cmake_python_symlink_commander_server
+[16.670s] running egg_info
+[16.679s] creating commander_server.egg-info
+[16.682s] writing commander_server.egg-info/PKG-INFO
+[16.685s] writing dependency_links to commander_server.egg-info/dependency_links.txt
+[16.688s] writing top-level names to commander_server.egg-info/top_level.txt
+[16.691s] writing manifest file 'commander_server.egg-info/SOURCES.txt'
+[16.709s] reading manifest file 'commander_server.egg-info/SOURCES.txt'
+[16.714s] writing manifest file 'commander_server.egg-info/SOURCES.txt'
+[17.177s] Built target ament_cmake_python_build_commander_server_egg
+[17.289s] Invoked command in '/home/ubuntu/ros2_ws/build/commander_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/build/commander_server -- -j4 -l4
+[17.746s] Invoking command in '/home/ubuntu/ros2_ws/build/commander_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/build/commander_server
+[17.811s] -- Install configuration: ""
+[17.814s] -- Execute custom install script
+[17.817s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/environment/pythonpath.sh
+[17.904s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/environment/pythonpath.dsv
+[18.026s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server-0.0.0-py3.10.egg-info/PKG-INFO
+[18.098s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server-0.0.0-py3.10.egg-info/SOURCES.txt
+[18.217s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server-0.0.0-py3.10.egg-info/dependency_links.txt
+[18.291s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server-0.0.0-py3.10.egg-info/top_level.txt
+[18.413s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server/__init__.py
+[18.503s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server/turtlebot4_commander.py
+[18.606s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/ament_index/resource_index/package_run_dependencies/commander_server
+[18.757s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/ament_index/resource_index/parent_prefix_path/commander_server
+[18.837s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/environment/ament_prefix_path.sh
+[18.906s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/environment/ament_prefix_path.dsv
+[18.976s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/environment/path.sh
+[19.034s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/environment/path.dsv
+[19.086s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/local_setup.bash
+[19.176s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/local_setup.sh
+[19.242s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/local_setup.zsh
+[19.357s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/local_setup.dsv
+[19.434s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/package.dsv
+[19.588s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/ament_index/resource_index/packages/commander_server
+[19.673s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/cmake/commander_serverConfig.cmake
+[19.789s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/cmake/commander_serverConfig-version.cmake
+[19.919s] -- Symlinking: /home/ubuntu/ros2_ws/install/commander_server/share/commander_server/package.xml
+[20.614s] Listing '/home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server'...
+[20.615s] Compiling '/home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server/__init__.py'...
+[20.615s] Compiling '/home/ubuntu/ros2_ws/install/commander_server/local/lib/python3.10/dist-packages/commander_server/turtlebot4_commander.py'...
+[20.751s] Invoked command in '/home/ubuntu/ros2_ws/build/commander_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/build/commander_server

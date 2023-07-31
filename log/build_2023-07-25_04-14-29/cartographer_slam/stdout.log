@@ -1,0 +1,30 @@
+-- Found ament_cmake: 1.3.5 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found ament_lint_auto: 0.12.7 (/opt/ros/humble/share/ament_lint_auto/cmake)
+-- Added test 'copyright' to check source files copyright and LICENSE
+-- Added test 'flake8' to check Python code syntax and style conventions
+-- Added test 'lint_cmake' to check CMake code style
+-- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+-- Added test 'xmllint' to check XML markup files
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/ubuntu/ros2_ws/build/cartographer_slam
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/config/cartographer.lua
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/launch/cartographer.launch.py
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/ament_index/resource_index/package_run_dependencies/cartographer_slam
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/ament_index/resource_index/parent_prefix_path/cartographer_slam
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/environment/ament_prefix_path.sh
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/environment/ament_prefix_path.dsv
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/environment/path.sh
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/environment/path.dsv
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/local_setup.bash
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/local_setup.sh
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/local_setup.zsh
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/local_setup.dsv
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/package.dsv
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/ament_index/resource_index/packages/cartographer_slam
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/cmake/cartographer_slamConfig.cmake
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/cmake/cartographer_slamConfig-version.cmake
+-- Symlinking: /home/ubuntu/ros2_ws/install/cartographer_slam/share/cartographer_slam/package.xml

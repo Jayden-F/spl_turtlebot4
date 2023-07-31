@@ -1,0 +1,1 @@
+/home/ubuntu/ros2_ws/build/irobot_create_msgs/rosidl_generator_cpp/irobot_create_msgs/action/detail/audio_note_sequence__traits.hpp

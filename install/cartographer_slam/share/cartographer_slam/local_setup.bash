@@ -1,0 +1,1 @@
+/home/ubuntu/ros2_ws/build/cartographer_slam/ament_cmake_environment_hooks/local_setup.bash

@@ -1,0 +1,4 @@
+Invoking command in '/home/ubuntu/ros2_ws/build/cartographer_slam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/cartographer_slam -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/install/cartographer_slam
+Invoked command in '/home/ubuntu/ros2_ws/build/cartographer_slam' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/cartographer_slam -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/install/cartographer_slam
+Invoking command in '/home/ubuntu/ros2_ws/build/cartographer_slam': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/build/cartographer_slam -- -j4 -l4
+Invoked command in '/home/ubuntu/ros2_ws/build/cartographer_slam' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/build/cartographer_slam -- -j4 -l4

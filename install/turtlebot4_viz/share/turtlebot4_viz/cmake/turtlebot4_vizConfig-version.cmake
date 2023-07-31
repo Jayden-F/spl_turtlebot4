@@ -1,0 +1,1 @@
+/home/ubuntu/ros2_ws/build/turtlebot4_viz/ament_cmake_core/turtlebot4_vizConfig-version.cmake

@@ -1,0 +1,15 @@
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/ament_index/resource_index/package_run_dependencies/turtlebot4_desktop
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/ament_index/resource_index/parent_prefix_path/turtlebot4_desktop
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/environment/ament_prefix_path.sh
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/environment/ament_prefix_path.dsv
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/environment/path.sh
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/environment/path.dsv
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/local_setup.bash
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/local_setup.sh
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/local_setup.zsh
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/local_setup.dsv
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/package.dsv
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/ament_index/resource_index/packages/turtlebot4_desktop
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/cmake/turtlebot4_desktopConfig.cmake
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/cmake/turtlebot4_desktopConfig-version.cmake
+/home/ubuntu/ros2_ws/install/turtlebot4_desktop/share/turtlebot4_desktop/package.xml

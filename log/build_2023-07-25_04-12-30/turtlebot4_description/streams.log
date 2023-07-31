@@ -1,0 +1,18 @@
+[0.140s] Invoking command in '/home/ubuntu/ros2_ws/build/turtlebot4_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/turtlebot4/turtlebot4_description -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/install/turtlebot4_description
+[1.285s] -- The C compiler identification is GNU 11.3.0
+[2.147s] -- The CXX compiler identification is GNU 11.3.0
+[2.198s] -- Detecting C compiler ABI info
+[2.737s] -- Detecting C compiler ABI info - done
+[2.777s] -- Check for working C compiler: /usr/bin/cc - skipped
+[2.778s] -- Detecting C compile features
+[2.780s] -- Detecting C compile features - done
+[2.813s] -- Detecting CXX compiler ABI info
+[3.450s] -- Detecting CXX compiler ABI info - done
+[3.482s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[3.485s] -- Detecting CXX compile features
+[3.488s] -- Detecting CXX compile features - done
+[3.530s] -- Found ament_cmake: 1.3.5 (/opt/ros/humble/share/ament_cmake/cmake)
+[5.054s] -- Found Python3: /usr/bin/python3.10 (found version "3.10.6") found components: Interpreter 
+[6.030s] -- Found urdf: 2.6.0 (/opt/ros/humble/share/urdf/cmake)
+[6.758s] -- Found irobot_create_description: 2.1.0 (/opt/ros/humble/share/irobot_create_description/cmake)
+[6.780s] -- Found ament_lint_auto: 0.12.7 (/opt/ros/humble/share/ament_lint_auto/cmake)
