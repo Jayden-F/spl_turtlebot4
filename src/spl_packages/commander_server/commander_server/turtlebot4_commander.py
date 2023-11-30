@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 import requests
 import json
@@ -33,21 +35,22 @@ class Turtlebot4_Commander(BasicNavigator):
         self.serverPort: int = serverPort
         self.isExecuting: bool = False
         self.pose: PoseStamped = None
+        self.timestep: int = 0
+        print(f"Starting Commander Server:\nRobot ID: {turtlebot4_id}\nWebserver: {hostName}:{serverPort}")
+        self.run()
 
-        self.commander()
 
 
-    def commander(self):
+    def run(self):
+    
 
-        while True:
+        data = self.get_request()
+        position = data.get("position")
+        self.timestep = data.get("timestep")
 
-            if self.isExecuting:
+        pose = self.getPoseStamped(position)
+        self.send_goal(pose)
 
-        
-            data = self.get_request()
-            position = data.get("position")
-            pose = self.getPoseStamped(position)
-            self.send_goal(pose)
         
 
     def get_request(self):
@@ -55,21 +58,31 @@ class Turtlebot4_Commander(BasicNavigator):
         url = f"http://{self.hostName}:{self.serverPort}"
         params = {"agent_id": self.turtlebot4_id}
 
-        r = requests.get(url, params=params)
+        r = None
+        while r is None:
+            try:
+                r = requests.get(url, params=params)
+            except requests.ConnectionError:
+                r = None
 
         return json.loads(r.content.decode())
-    
+
     def post_request(self, position: PoseStamped, status: str) -> None:
         """Post the current position to the server."""
         url = f"http://{self.hostName}:{self.serverPort}"
 
         data = {"agent_id": self.turtlebot4_id,
-                "position": [position],
-                "status": status}
+                "position": [position.pose.position.x, position.pose.position.y, position.pose.orientation.z],
+                "status": status,
+                "timestep": self.timestep}
         
         json_data = json.dumps(data)
-
-        r = requests.post(url, data=json_data)
+        r = None
+        while r is None:
+            try:
+                r = requests.post(url, data=json_data)
+            except requests.ConnectionError:
+                r = None
 
 
     def getPoseStamped(self, position: Position) -> PoseStamped:
@@ -101,8 +114,6 @@ class Turtlebot4_Commander(BasicNavigator):
         self.info('Navigating to goal: ' + str(pose.pose.position.x) + ' ' +
             str(pose.pose.position.y) + '...')
         
-        self.isExecuting =  True
-
         self.nav_to_pose_client.wait_for_server()
 
         self._send_goal_future = self.nav_to_pose_client.send_goal_async(goal_msg, self.feedback_callback)
@@ -114,7 +125,6 @@ class Turtlebot4_Commander(BasicNavigator):
         goal_handle: NavigateToPose_SendGoal_Response = future.result()
         if not goal_handle.accepted:
             self.get_logger().info('Goal rejected :(')
-            self.isExecuting = False
             return
 
         self.get_logger().info('Goal accepted :)')
@@ -135,7 +145,7 @@ class Turtlebot4_Commander(BasicNavigator):
         eda = feedback.distance_remaining
         
         self.info("Pose: " + str([position.x, position.y]) + " eta: " + str(eta) + " eda: " + str(eda))
-        self.post_request(self.pose, "executing")
+        self.post_request(self.pose, "Executing")
 
 
     def get_result_callback(self, future):
@@ -156,7 +166,9 @@ class Turtlebot4_Commander(BasicNavigator):
 
         self.post_request(self.pose, status_string)
         self.info("Goal Status: " + status_string)
-           
+        
+        self.run()
+
 
 
 def main(args=None):

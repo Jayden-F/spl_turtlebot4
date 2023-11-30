@@ -27,8 +27,8 @@ def generate_launch_description():
     path_planner_package = get_package_share_directory(
         'path_planner_server')
 
-    cartographer_slam_package = get_package_share_directory(
-        'cartographer_slam')
+    # cartographer_slam_package = get_package_share_directory(
+    #     'cartographer_slam')
 
     rviz_package = get_package_share_directory("rviz2_server")
 
@@ -69,8 +69,8 @@ def generate_launch_description():
 
     ld = LaunchDescription(ARGUMENTS)
     ld.add_action(navigation)
-    # ld.add_action(localization)
-    ld.add_action(mapping)
+    ld.add_action(localization)
+    # ld.add_action(mapping)
     ld.add_action(rviz)
 
     return ld
