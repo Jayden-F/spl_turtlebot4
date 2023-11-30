@@ -17,24 +17,21 @@
 # @author Roni Kreinin (rkreinin@clearpathrobotics.com)
 
 
-from enum import IntEnum
 import math
-from threading import Thread
 import time
-
-from action_msgs.msg import GoalStatus
-
-from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
-
-from irobot_create_msgs.action import Dock, Undock
-from irobot_create_msgs.msg import DockStatus
-
-from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
+from enum import IntEnum
+from threading import Thread
 
 import rclpy
+from action_msgs.msg import GoalStatus
+from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
 from rclpy.action import ActionClient
 from rclpy.duration import Duration
 from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
+
+from irobot_create_msgs.action import Dock, Undock
+from irobot_create_msgs.msg import DockStatus
 
 
 class TurtleBot4Directions(IntEnum):
