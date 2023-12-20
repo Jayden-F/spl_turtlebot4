@@ -198,7 +198,7 @@ class Turtlebot4_Commander(Node):
         self.run()
 
     def _amclPoseCallback(self, msg):
-        self.post_request(msg.data, "SUCCESS")
+        self.post_request(msg.data, "Succeeded")
 
 
 def main():
