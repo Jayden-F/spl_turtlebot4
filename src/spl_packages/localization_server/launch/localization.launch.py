@@ -15,7 +15,7 @@ def generate_launch_description():
     amcl_yaml = os.path.join(get_package_share_directory(
         'localization_server'), 'config', 'amcl_config.yaml')
     map_file = os.path.join(get_package_share_directory(
-        'localization_server'), 'maps', 'woodside.yaml')
+        'localization_server'), 'maps', 'full_office.yaml')
 
     ARGUMENTS = [
         DeclareLaunchArgument(

@@ -78,6 +78,7 @@ class Turtlebot4_Commander(BasicNavigator):
         position = data.get("position")
         self.timestep = data.get("timestep")
 
+>>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
         pose = self.getPoseStamped(position)
         self.send_goal(pose)
 
@@ -111,6 +112,10 @@ class Turtlebot4_Commander(BasicNavigator):
         }
 
         json_data = json.dumps(data)
+<<<<<<< HEAD
+
+=======
+>>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
         r = None
         while r is None:
             try:
@@ -189,6 +194,7 @@ class Turtlebot4_Commander(BasicNavigator):
             + str(eda)
         )
         self.post_request(self.pose, "Executing")
+>>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
 
     def get_result_callback(self, future):
         reponse: NavigateToPose_GetResult_Response = future.result()
