@@ -36,7 +36,7 @@ class Over_Here(Node):
             durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
             reliability=QoSReliabilityPolicy.RELIABLE,
             history=QoSHistoryPolicy.KEEP_LAST,
-            depth=1,
+
         )
         self.localization_pose_sub = self.create_subscription(
             PoseWithCovarianceStamped,
@@ -60,8 +60,6 @@ class Turtlebot4_Commander(BasicNavigator):
     ):
         super().__init__("turtlebot4_commander")
 
-        # self.timer = self.create_timer(0.5, self.commander)
-
         self.turtlebot4_id: int = turtlebot4_id
         self.hostName: str = hostName
         self.serverPort: int = serverPort
@@ -78,7 +76,6 @@ class Turtlebot4_Commander(BasicNavigator):
         position = data.get("position")
         self.timestep = data.get("timestep")
 
->>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
         pose = self.getPoseStamped(position)
         self.send_goal(pose)
 
@@ -112,10 +109,7 @@ class Turtlebot4_Commander(BasicNavigator):
         }
 
         json_data = json.dumps(data)
-<<<<<<< HEAD
 
-=======
->>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
         r = None
         while r is None:
             try:
@@ -194,7 +188,6 @@ class Turtlebot4_Commander(BasicNavigator):
             + str(eda)
         )
         self.post_request(self.pose, "Executing")
->>>>>>> e25c3be7fa2732a0cf6ae8277d08a07a5cc6b46f
 
     def get_result_callback(self, future):
         reponse: NavigateToPose_GetResult_Response = future.result()
@@ -219,10 +212,10 @@ class Turtlebot4_Commander(BasicNavigator):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--id", type=int, default=0, dest="turtlebot4_id")
+    parser.add_argument('--id', type=int, default=0)
     args = parser.parse_args()
     rclpy.init(args=args)
-    commander = Turtlebot4_Commander(args.turtlebot4_id)
+    commander = Turtlebot4_Commander(args.id)
     try:
         rclpy.spin(commander)
     except KeyboardInterrupt:
