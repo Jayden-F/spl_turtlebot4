@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+import argparse
 import json
 import os
-import argparse
 from math import cos, radians, sin
 from typing import Tuple
 
@@ -12,46 +12,20 @@ from action_msgs.msg import GoalStatus
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
 from nav2_msgs.action import NavigateToPose
 from nav2_msgs.action._navigate_to_pose import (
-    NavigateToPose_FeedbackMessage,
-    NavigateToPose_GetResult_Response,
-    NavigateToPose_SendGoal_Response,
-)
+    NavigateToPose_FeedbackMessage, NavigateToPose_GetResult_Response,
+    NavigateToPose_SendGoal_Response)
 from nav2_simple_commander.robot_navigator import BasicNavigator
+from rclpy.action import ActionClient
 from rclpy.duration import Duration
 from rclpy.node import Node
-from rclpy.qos import (
-    QoSDurabilityPolicy,
-    QoSHistoryPolicy,
-    QoSProfile,
-    QoSReliabilityPolicy,
-)
+from rclpy.qos import (QoSDurabilityPolicy, QoSHistoryPolicy, QoSProfile,
+                       QoSReliabilityPolicy)
 
 X = Y = Theta = float
 Position = Tuple[X, Y, Theta]
 
 
-class Over_Here(Node):
-    def __init__(self) -> None:
-        amcl_pose_qos = QoSProfile(
-            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
-            reliability=QoSReliabilityPolicy.RELIABLE,
-            history=QoSHistoryPolicy.KEEP_LAST,
-
-        )
-        self.localization_pose_sub = self.create_subscription(
-            PoseWithCovarianceStamped,
-            "amcl_pose",
-            self._amclPoseCallback,
-            amcl_pose_qos,
-        )
-
-        def _amclPoseCallback(self, msg):
-            self.debug("Received amcl pose")
-            self.initial_pose_received = True
-            return
-
-
-class Turtlebot4_Commander(BasicNavigator):
+class Turtlebot4_Commander(Node):
     def __init__(
         self,
         turtlebot4_id: int = 0,
@@ -60,6 +34,20 @@ class Turtlebot4_Commander(BasicNavigator):
     ):
         super().__init__("turtlebot4_commander")
 
+        amcl_pose_qos = QoSProfile(
+            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+            reliability=QoSReliabilityPolicy.RELIABLE,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=1,
+        )
+
+        self.nav_to_pose_client = ActionClient(self, NavigateToPose, "navigate_to_pose")
+        self.localization_pose_sub = self.create_subscription(
+            PoseWithCovarianceStamped,
+            "amcl_pose",
+            self._amclPoseCallback,
+            amcl_pose_qos,
+        )
         self.turtlebot4_id: int = turtlebot4_id
         self.hostName: str = hostName
         self.serverPort: int = serverPort
@@ -76,7 +64,7 @@ class Turtlebot4_Commander(BasicNavigator):
         position = data.get("position")
         self.timestep = data.get("timestep")
 
-        pose = self.getPoseStamped(position)
+        pose: PoseStamped = self.getPoseStamped(position)
         self.send_goal(pose)
 
     def get_request(self):
@@ -110,12 +98,12 @@ class Turtlebot4_Commander(BasicNavigator):
 
         json_data = json.dumps(data)
 
-        r = None
-        while r is None:
+        while True:
             try:
-                r = requests.post(url, data=json_data)
+                requests.post(url, data=json_data)
             except requests.ConnectionError:
-                r = None
+                continue
+            break
 
     def getPoseStamped(self, position: Position) -> PoseStamped:
         """
@@ -139,11 +127,11 @@ class Turtlebot4_Commander(BasicNavigator):
 
         return pose
 
-    def send_goal(self, pose: Position):
+    def send_goal(self, pose: PoseStamped):
         goal_msg = NavigateToPose.Goal()
         goal_msg.pose = pose
 
-        self.info(
+        self.get_logger().info(
             "Navigating to goal: "
             + str(pose.pose.position.x)
             + " "
@@ -171,7 +159,7 @@ class Turtlebot4_Commander(BasicNavigator):
         self._get_result_future.add_done_callback(self.get_result_callback)
 
     def feedback_callback(self, msg: NavigateToPose_FeedbackMessage):
-        self.debug("Received action feedback message")
+        self.get_logger().debug("Received action feedback message")
         feedback = msg.feedback
         self.pose = feedback.current_pose
         position = feedback.current_pose.pose._position
@@ -179,7 +167,7 @@ class Turtlebot4_Commander(BasicNavigator):
         eta = Duration.from_msg(feedback.estimated_time_remaining).nanoseconds / 1e9
         eda = feedback.distance_remaining
 
-        self.info(
+        self.get_logger().info(
             "Pose: "
             + str([position.x, position.y])
             + " eta: "
@@ -205,14 +193,17 @@ class Turtlebot4_Commander(BasicNavigator):
                 status_string = "Unknown"
 
         self.post_request(self.pose, status_string)
-        self.info("Goal Status: " + status_string)
+        self.get_logger().info("Goal Status: " + status_string)
 
         self.run()
+
+    def _amclPoseCallback(self, msg):
+        self.post_request(msg.data, "SUCCESS")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--id', type=int, default=0)
+    parser.add_argument("--id", type=int, default=0)
     args = parser.parse_args()
     rclpy.init(args=args)
     commander = Turtlebot4_Commander(args.id)
