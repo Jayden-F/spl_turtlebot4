@@ -198,8 +198,8 @@ class Turtlebot4_Commander(Node):
         self.run()
 
     def _amclPoseCallback(self, msg):
-        self.post_request(msg.data, "Succeeded")
-        self.destroy_subscription(self.localization_pose_sub)
+        self.post_request(msg.pose, "Succeeded")
+        self.destroy_subscription(self.localization_pose_sub )
 
 def main():
     parser = argparse.ArgumentParser()
