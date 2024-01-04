@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
-
 import argparse
 import json
 import os
+import time
 from math import cos, radians, sin
 from typing import Tuple
 
@@ -60,12 +59,18 @@ class Turtlebot4_Commander(Node):
         self.run()
 
     def run(self):
-        data = self.get_request()
-        position = data.get("position")
-        self.timestep = data.get("timestep")
 
-        pose: PoseStamped = self.getPoseStamped(position)
-        self.send_goal(pose)
+        while True:
+            if self.isExecuting:
+                time.sleep(0.2)
+                continue
+
+            data = self.get_request()
+            position = data.get("position")
+            self.timestep = data.get("timestep")
+
+            pose: PoseStamped = self.getPoseStamped(position)
+            self.send_goal(pose)
 
     def get_request(self):
         """Get the next position to navigate to."""
@@ -154,7 +159,7 @@ class Turtlebot4_Commander(Node):
             return
 
         self.get_logger().info("Goal accepted :)")
-
+        self.isExecuting = True
         self._get_result_future = goal_handle.get_result_async()
         self._get_result_future.add_done_callback(self.get_result_callback)
 
@@ -195,7 +200,7 @@ class Turtlebot4_Commander(Node):
         self.post_request(self.pose, status_string)
         self.get_logger().info("Goal Status: " + status_string)
 
-        self.run()
+        self.isExecuting = False;
 
     def _amclPoseCallback(self, msg):
         self.post_request(msg.pose, "Succeeded")
