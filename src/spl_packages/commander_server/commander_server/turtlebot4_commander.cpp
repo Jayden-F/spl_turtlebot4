@@ -10,6 +10,78 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
 
   this->navigate_to_pose_client_ptr_ =
       rclcpp_action::create_client<NavigateToPose>(this, "/navigate_to_pose");
+
+  // Connect to the central controller
+  boost::asio::io_service io_service;
+  sock_(io_service);
+  try {
+    sock_.connect(
+        ip::tcp::endpoint(ip::address::from_string(ip_), std::stoi(port_)));
+  } catch (boost::system::system_error &e) {
+    RCLCPP_WARN(this->get_logger(), "Error: %s", e.what());
+  }
+}
+
+Pose commander_server::turtlebot4_commander::get_request() {
+  boost::system::error_code ec;
+
+  // no need to build a string everytime should be const but lazy
+  const std::string request("GET /?agent_id=" + id_ + " HTTP/1.1\r\n\r\n");
+  sock_.send(buffer(request));
+
+  std::string response;
+  do {
+    char buf[1024];
+    size_t bytes_transferred = sock_.receive(buffer(buf), {}, ec);
+    if (!ec) {
+      response.append(buf, buf + bytes_transferred);
+    }
+  } while (!ec);
+
+  if response
+    .empty() { RCLCPP_WARN(this->get_logger(), "Response was empty"); }
+
+  uint64_t split = response.rfind('\n', response.length());
+  string data = response.substr(split, response.length() - split);
+  json json_received = json::parse(data);
+
+  // read the position from the json in format [x, y, theta]
+  std::vector<json> position = json_received["position"];
+  int x = position[0].get<int>();
+  int y = position[1].get<int>();
+  int theta = position[2].get<int>();
+
+  return get_pose_stamped(x, y, theta);
+}
+
+void commander_server::turtlebot4_commander::post_request(Pose pose,
+                                                          std::string status) {
+  json::object_t payload;
+  payload["agent_id"] = id_;
+  payload["status"] = status;
+  payload["position"] = json::array(
+      {pose.pose.position.x, pose.pose.position.y, pose.pose.orientation.z});
+
+  std::string serial_payload = payload.dump();
+  std::string request(
+      "POST / HTTP/1.1\r\n" + "Host: " + std::to_string(id_) + " \r\n" +
+      "Connection: close\r\n" + "Accept: */*\r\n" + "User-Agent: " +
+      std::to_string(id_) + "\r\n" + "Content-Type: applications/json\r\n" +
+      "Content-Length: " + std::to_string(serial_payload.length()) + "\r\n" +
+      "\r\n" + serial_payload);
+  sock.send(buffer(request));
+  do {
+    char buf[1024];
+    size_t bytes_transferred = sock.receive(buffer(buf), {}, ec);
+    if (!ec) {
+      response.append(buf, buf + bytes_transferred);
+    }
+  } while (!ec);
+
+  if response
+    .empty() { RCLCPP_WARN(this->get_logger(), "Response was empty"); }
+
+  RCLCPP_INFO(this->get_logger(), "Response: %s", response);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose(Pose pose) {
@@ -19,21 +91,19 @@ void commander_server::turtlebot4_commander::navigate_to_pose(Pose pose) {
 }
 
 commander_server::Pose
-commander_server::turtlebot4_commander::get_pose_stamped(float x, float y) {
+commander_server::turtlebot4_commander::get_pose_stamped() {
   Pose pose = Pose();
+
   pose.header.frame_id = "map";
+  pose.header.stamp = self.get_clock().now().to_msg();
+
   pose.pose.position.x = x;
   pose.pose.position.y = y;
+
+  pose.pose.orientation.z = sin(radians(theta) / 2);
+  pose.pose.orientation.w = cos(radians(theta) / 2);
   return pose;
 }
-
-// void commander_server::turtlebot4_commander::turtlebot4_status_callback(
-// const Turtlebot4Status::SharedPtr msg) {
-// auto battery = msg->status[0].values[0].value;
-// RCLCPP_INFO(this->get_logger(), "%s", battery.c_str());
-//// TODO
-//// Get useful robot state information.
-//}
 
 void commander_server::turtlebot4_commander::navigate_to_pose_send_goal(
     Pose pose) {

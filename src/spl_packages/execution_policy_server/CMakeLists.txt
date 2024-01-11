@@ -16,18 +16,6 @@ include_directories(
   include
 )
 
-add_executable(turtlebot4_navigator src/turtlebot4_navigator.cpp)
-ament_target_dependencies(turtlebot4_navigator
-rclcpp
-rclcpp_action
-irobot_create_msgs
-nav2_msgs)
-
-install(TARGETS
-turtlebot4_navigator
-DESTINATION lib/${PROJECT_NAME})
-
-
 install(DIRECTORY include/
   DESTINATION include/
 )
