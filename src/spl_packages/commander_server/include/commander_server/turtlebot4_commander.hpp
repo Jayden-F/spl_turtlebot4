@@ -1,5 +1,6 @@
+#include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/pose_with_covariance.hpp"
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "irobot_create_msgs/action/dock.hpp"
 #include "irobot_create_msgs/action/undock.hpp"
 #include "nav2_msgs/action/navigate_to_pose.h"
@@ -18,8 +19,9 @@ namespace commander_server {
 #define PI 3.14159265
 
 using json = nlohmann::json;
-using Pose = geometry_msgs::msg::PoseStamped;
-using PoseCovaraince = geometry_msgs::msg::PoseWithCovariance;
+using Pose = geometry_msgs::msg::Pose;
+using PoseStamped = geometry_msgs::msg::PoseStamped;
+using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
 using NavigateToPose = nav2_msgs::action::NavigateToPose;
 using GoalHandleNavigateToPose =
     rclcpp_action::ClientGoalHandle<NavigateToPose>;
@@ -31,26 +33,27 @@ public:
       uint32_t id, const std::string &ip, const uint16_t port,
       const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
-  Pose get_request();
+  PoseStamped get_request();
 
   void post_request(Pose pose, std::string status);
 
-  void navigate_to_pose(Pose pose);
+  void navigate_to_pose(PoseStamped pose);
 
-  Pose get_pose_stamped(float x, float y, float theta);
+  PoseStamped get_pose_stamped(float x, float y, float theta);
 
 private:
   const std::string ip_;
   const uint16_t port_;
   const uint32_t id_;
   rclcpp_action::Client<NavigateToPose>::SharedPtr navigate_to_pose_client_ptr_;
-  rclcpp::Subscription<PoseWithCovariance>::SharedPtr pose_subscriber_ptr_;
+  rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr
+      pose_subscriber_ptr_;
   boost::asio::io_service io_service_;
   boost::asio::ip::tcp::socket socket_;
 
   // Follow Waypoints Command
   //====================================================================================
-  void navigate_to_pose_send_goal(Pose pose);
+  void navigate_to_pose_send_goal(PoseStamped pose);
 
   void navigate_to_pose_goal_response_callback(
       const GoalHandleNavigateToPose::SharedPtr goal_handle);
@@ -62,7 +65,7 @@ private:
   void navigate_to_pose_result_callback(
       const GoalHandleNavigateToPose::WrappedResult &result);
 
-  void pose_topic_callback(const PoseWithCovariance::SharedPtr msg) const;
+  void pose_topic_callback(const PoseWithCovarianceStamped::SharedPtr msg);
 };
 
 } // namespace commander_server
