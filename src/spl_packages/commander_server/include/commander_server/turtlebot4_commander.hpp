@@ -1,3 +1,6 @@
+#ifndef TURTLEBOT4_COMMANDER_HPP
+#define TURTLEBOT4_COMMANDER_HPP
+
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
@@ -9,10 +12,12 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include <boost/asio.hpp>
 #include <boost/asio/ip/address.hpp>
+#include <boost/program_options.hpp>
 #include <cstdint>
 #include <math.h>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <map>
 
 namespace commander_server {
 
@@ -30,7 +35,7 @@ class turtlebot4_commander : public rclcpp::Node {
 
 public:
   turtlebot4_commander(
-      uint32_t id, const std::string &ip, const uint16_t port,
+      const uint32_t id, const std::string &ip, const uint16_t port,
       const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
   PoseStamped get_request();
@@ -45,14 +50,15 @@ private:
   const std::string ip_;
   const uint16_t port_;
   const uint32_t id_;
+  Pose pose_;
   rclcpp_action::Client<NavigateToPose>::SharedPtr navigate_to_pose_client_ptr_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr
       pose_subscriber_ptr_;
   boost::asio::io_service io_service_;
   boost::asio::ip::tcp::socket socket_;
+  rclcpp::TimerBase::SharedPtr timer_;
+  bool is_executing_;
 
-  // Follow Waypoints Command
-  //====================================================================================
   void navigate_to_pose_send_goal(PoseStamped pose);
 
   void navigate_to_pose_goal_response_callback(
@@ -66,6 +72,9 @@ private:
       const GoalHandleNavigateToPose::WrappedResult &result);
 
   void pose_topic_callback(const PoseWithCovarianceStamped::SharedPtr msg);
+
+  void polling_callback();
 };
 
 } // namespace commander_server
+#endif

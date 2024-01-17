@@ -19,7 +19,6 @@ endif()
 include_directories(
   include
 )
-
 install(DIRECTORY include/
   DESTINATION include/
 )
@@ -34,7 +33,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(irobot_create_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
-
+find_package(Boost REQUIRED COMPONENTS program_options)
 
 add_executable(turtlebot4_commander commander_server/turtlebot4_commander.cpp)
 ament_target_dependencies(turtlebot4_commander
@@ -45,6 +44,8 @@ nav2_msgs
 diagnostic_msgs
 )
 
+include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries(turtlebot4_commander ${Boost_LIBRARIES})
 
 install(TARGETS
 turtlebot4_commander
@@ -55,3 +56,4 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS commander_server/turtlebot4_commander.py DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
+

@@ -4,31 +4,36 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      socket_(io_service_) {
+      socket_(io_service_), is_executing_(0), pose_() {
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
-      ip_, port_);
+      ip_.c_str(), port_);
 
   navigate_to_pose_client_ptr_ =
       rclcpp_action::create_client<NavigateToPose>(this, "/navigate_to_pose");
+
   pose_subscriber_ptr_ = create_subscription<PoseWithCovarianceStamped>(
       "/amcl_pose", 10,
       std::bind(&commander_server::turtlebot4_commander::pose_topic_callback,
                 this, std::placeholders::_1));
 
+  timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(100),
+      std::bind(&commander_server::turtlebot4_commander::polling_callback,
+                this));
+
   // Connect to the central controller
-  while
-    true {
-      try {
-        socket_.connect(boost::asio::ip::tcp::endpoint(
-            boost::asio::ip::address::from_string(ip_), port_));
-      } catch (boost::system::system_error &e) {
-        RCLCPP_WARN(this->get_logger(), "Error: %s", e.what());
-        continue;
-      }
+  while (true) {
+    try {
+      socket_.connect(boost::asio::ip::tcp::endpoint(
+          boost::asio::ip::address::from_string(ip_), port_));
       break;
+    } catch (boost::system::system_error &e) {
+      RCLCPP_WARN(this->get_logger(), "Error: %s", e.what());
+      rclcpp::sleep_for(std::chrono::seconds(1));
     }
+  }
 }
 
 commander_server::PoseStamped
@@ -157,6 +162,7 @@ void commander_server::turtlebot4_commander::
 
   if (!goal_handle) {
     RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
+    is_executing_ = false;
   } else {
     RCLCPP_INFO(this->get_logger(),
                 "Goal accepted by server, waiting for result");
@@ -166,12 +172,30 @@ void commander_server::turtlebot4_commander::
 void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
     GoalHandleNavigateToPose::SharedPtr,
     const std::shared_ptr<const NavigateToPose::Feedback> feedback) {
-  // RCLCPP_INFO(this->get_logger(), "Waypoint Number: %d",
-  // feedback->current_pose;
+
+  pose_ = feedback->current_pose.pose;
+  RCLCPP_INFO(this->get_logger(), "Received feedback: %f, %f, %f",
+              feedback->current_pose.pose.position.x,
+              feedback->current_pose.pose.position.y,
+              feedback->current_pose.pose.orientation.z);
+  post_request(feedback->current_pose.pose, "Executing");
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
-    const GoalHandleNavigateToPose::WrappedResult &result) {}
+    const GoalHandleNavigateToPose::WrappedResult &result) {
+
+  std::map<rclcpp_action::ResultCode, std::string> status{
+      {rclcpp_action::ResultCode::SUCCEEDED, "success"},
+      {rclcpp_action::ResultCode::ABORTED, "aborted"},
+      {rclcpp_action::ResultCode::CANCELED, "cancelled"},
+      {rclcpp_action::ResultCode::UNKNOWN, "unknown"},
+  };
+
+  RCLCPP_INFO(this->get_logger(), "Goal Status: %s",
+              status[result.code].c_str());
+  post_request(pose_, status[result.code]);
+  is_executing_ = false;
+}
 
 void commander_server::turtlebot4_commander::pose_topic_callback(
     const PoseWithCovarianceStamped::SharedPtr msg) {
@@ -180,14 +204,42 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
 
   Pose pose = msg->pose.pose;
   post_request(pose, "Executing");
-  pose_subscriber_ptr_->unsubscribe();
+  pose_subscriber_ptr_.reset();
 }
 
+void commander_server::turtlebot4_commander::polling_callback() {
+
+  if (is_executing_) {
+    return;
+  };
+
+  is_executing_ = true;
+  PoseStamped pose = get_request();
+  navigate_to_pose(pose);
+}
+namespace po = boost::program_options;
+
 int main(int argc, char **argv) {
+
+  std::string address;
+  uint16_t port;
+  uint32_t id;
+
   rclcpp::init(argc, argv);
 
+  po::options_description desc("Allowed options");
+  desc.add_options()("help", "produce help message")(
+      "ip", po::value<std::string>(&address)->default_value("192.168.0.204"),
+      "set ip address")("port", po::value<uint16_t>(&port)->default_value(8080),
+                        "set port number")(
+      "id", po::value<uint32_t>(&id)->default_value(0), "set agent id");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
   auto node = std::make_shared<commander_server::turtlebot4_commander>(
-      0, "192.168.0.204", 8080);
+      id, address, port);
 
   rclcpp::spin(node);
   rclcpp::shutdown();
