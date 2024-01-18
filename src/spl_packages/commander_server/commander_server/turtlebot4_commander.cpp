@@ -71,7 +71,7 @@ commander_server::turtlebot4_commander::get_request() {
   return get_pose_stamped(x, y, theta);
 }
 
-json commander_server::turtlebot4_commander::json_post_format(
+commander_server::json commander_server::turtlebot4_commander::json_post_format(
     Pose pose, std::string status) {
 
   json json_pose = json::object();
