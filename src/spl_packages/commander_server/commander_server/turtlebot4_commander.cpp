@@ -95,12 +95,10 @@ void commander_server::turtlebot4_commander::post_request(std::string path,
   std::string serial_payload = payload.dump();
 
   std::string request(
-      "POST " + path + " HTTP/1.1\r\n Host: \r\n " + std::to_string(id_) +
-      " \r\n" + "Connection: close\r\n Accept: */*\r\n User-Agent: " +
-      std::to_string(id_) +
+      "POST " + path + " HTTP/1.1\r\n Host: " + std::to_string(id_) +
+      "\r\n Accept: */*\r\n User-Agent: " + std::to_string(id_) +
       "\r\n Content-Type: applications/json\r\n Content-Length: " +
-      std::to_string(serial_payload.length()) + "\r\n\r\n" +
-      serial_payload);
+      std::to_string(serial_payload.length()) + "\r\n\r\n" + serial_payload);
 
   RCLCPP_INFO(this->get_logger(), "Sending: %s", request.c_str());
 
