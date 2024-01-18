@@ -4,7 +4,7 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      socket_(io_service_), is_executing_(0), pose_() {
+      socket_(io_service_), is_executing_(1), pose_() {
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
@@ -205,6 +205,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   Pose pose = msg->pose.pose;
   post_request(pose, "Executing");
   pose_subscriber_ptr_.reset();
+  is_executing_ = false;
 }
 
 void commander_server::turtlebot4_commander::polling_callback() {
