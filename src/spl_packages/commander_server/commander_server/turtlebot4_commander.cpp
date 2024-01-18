@@ -4,7 +4,7 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      socket_(io_service_), is_executing_(0), pose_() {
+      socket_(io_service_), is_executing_(1), pose_() {
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
@@ -71,8 +71,9 @@ commander_server::turtlebot4_commander::get_request() {
   return get_pose_stamped(x, y, theta);
 }
 
-commander_server::json commander_server::turtlebot4_commander::json_post_format(
-    Pose pose, std::string status) {
+commander_server::json
+commander_server::turtlebot4_commander::json_post_format(Pose pose,
+                                                         std::string status) {
 
   json json_pose = json::object();
   json_pose["x"] = pose.position.x;
@@ -222,6 +223,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   json payload = json_post_format(msg->pose.pose, "succeeded");
   post_request("/extend_path", payload);
   pose_subscriber_ptr_.reset();
+  is_executing_ = false;
 }
 
 void commander_server::turtlebot4_commander::polling_callback() {
