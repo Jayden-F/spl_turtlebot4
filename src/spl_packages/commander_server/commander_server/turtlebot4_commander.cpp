@@ -94,30 +94,21 @@ void commander_server::turtlebot4_commander::post_request(std::string path,
   boost::system::error_code ec;
   std::string serial_payload = payload.dump();
 
-  std::string request(
-      "POST " + path + " HTTP/1.1\r\n Host: " + std::to_string(id_) +
-      "\r\n Accept: */*\r\n User-Agent: " + std::to_string(id_) +
-      "\r\n Content-Type: applications/json\r\n Content-Length: " +
-      std::to_string(serial_payload.length()) + "\r\n\r\n" + serial_payload);
+  boost::asio::streambuf request;
+  std::ostream request_stream(&request);
 
-  RCLCPP_INFO(this->get_logger(), "Sending: %s", request.c_str());
+  request_stream << "POST " << path.c_str() << " HTTP/1.1\r\n"
+                 << "Host: " << ip_.c_str() << "\r\n"
+                 << "Accept: */*\r\n"
+                 << "User-Agent: " << std::to_string(id_) << "\r\n"
+                 << "Content-Type: applications/json\r\n"
+                 << "Content-Length: " << serial_payload.length() << "\r\n\r\n"
+                 << serial_payload;
 
-  socket_.send(boost::asio::buffer(request));
-  std::string response;
-  do {
-    char buf[1024];
-    size_t bytes_transferred =
-        socket_.receive(boost::asio::buffer(buf), {}, ec);
-    if (!ec) {
-      response.append(buf, buf + bytes_transferred);
-    }
-  } while (!ec);
-
-  if (response.empty()) {
-    RCLCPP_WARN(this->get_logger(), "Response was empty");
-  }
-
-  RCLCPP_INFO(this->get_logger(), "Response: %s", response.c_str());
+  boost::asio::write(socket_, request);
+  boost::asio::streambuf response;
+  boost::asio::read_until(socket_, response, "\r\n", ec);
+  std::istream response_stream(&response);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose(
