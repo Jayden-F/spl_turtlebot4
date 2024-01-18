@@ -4,7 +4,7 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      socket_(io_service_), is_executing_(1), pose_() {
+      socket_(io_service_), is_executing_(0), pose_() {
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
@@ -31,7 +31,6 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
       break;
     } catch (boost::system::system_error &e) {
       RCLCPP_WARN(this->get_logger(), "Error: %s", e.what());
-      rclcpp::sleep_for(std::chrono::seconds(1));
     }
   }
 }
@@ -72,23 +71,37 @@ commander_server::turtlebot4_commander::get_request() {
   return get_pose_stamped(x, y, theta);
 }
 
-void commander_server::turtlebot4_commander::post_request(Pose pose,
-                                                          std::string status) {
-  boost::system::error_code ec;
+json commander_server::turtlebot4_commander::json_post_format(
+    Pose pose, std::string status) {
+
+  json json_pose = json::object();
+  json_pose["x"] = pose.position.x;
+  json_pose["y"] = pose.position.y;
+  json_pose["theta"] =
+      asin(pose.orientation.z) * 2 * 180 / PI; // magic backtracking trust me
+
   json payload = json::object();
   payload["agent_id"] = id_;
   payload["status"] = status;
+  payload["pose"] = json_pose;
 
+  return payload;
+}
+
+void commander_server::turtlebot4_commander::post_request(std::string path,
+                                                          json payload) {
+  boost::system::error_code ec;
   std::string serial_payload = payload.dump();
+
   std::string request(
-      "POST / HTTP/1.1\r\n Host: \r\n " + std::to_string(id_) + " \r\n" +
-      "Connection: close\r\n Accept: */*\r\n User-Agent: " +
+      "POST " + path + " HTTP/1.1\r\n Host: \r\n " + std::to_string(id_) +
+      " \r\n" + "Connection: close\r\n Accept: */*\r\n User-Agent: " +
       std::to_string(id_) +
       "\r\n Content-Type: applications/json\r\n Content-Length: " +
       std::to_string(serial_payload.length()) + "\r\n" + "\r\n" +
       serial_payload);
-  socket_.send(boost::asio::buffer(request));
 
+  socket_.send(boost::asio::buffer(request));
   std::string response;
   do {
     char buf[1024];
@@ -178,7 +191,9 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
               feedback->current_pose.pose.position.x,
               feedback->current_pose.pose.position.y,
               feedback->current_pose.pose.orientation.z);
-  post_request(feedback->current_pose.pose, "Executing");
+
+  json payload = json_post_format(feedback->current_pose.pose, "executing");
+  post_request("/", payload);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
@@ -193,7 +208,9 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
 
   RCLCPP_INFO(this->get_logger(), "Goal Status: %s",
               status[result.code].c_str());
-  post_request(pose_, status[result.code]);
+
+  json payload = json_post_format(pose_, status[result.code]);
+  post_request("/", payload);
   is_executing_ = false;
 }
 
@@ -202,10 +219,9 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   RCLCPP_INFO(this->get_logger(), "Pose: %f, %f, %f", msg->pose.pose.position.x,
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
-  Pose pose = msg->pose.pose;
-  post_request(pose, "Executing");
+  json payload = json_post_format(msg->pose.pose, "succeeded");
+  post_request("/extend_path", payload);
   pose_subscriber_ptr_.reset();
-  is_executing_ = false;
 }
 
 void commander_server::turtlebot4_commander::polling_callback() {

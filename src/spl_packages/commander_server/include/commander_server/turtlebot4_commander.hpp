@@ -14,10 +14,10 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
 #include <cstdint>
+#include <map>
 #include <math.h>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <map>
 
 namespace commander_server {
 
@@ -40,11 +40,13 @@ public:
 
   PoseStamped get_request();
 
-  void post_request(Pose pose, std::string status);
+  void post_request(std::string path, json payload);
 
   void navigate_to_pose(PoseStamped pose);
 
   PoseStamped get_pose_stamped(float x, float y, float theta);
+
+  json json_post_format(Pose pose, std::string status);
 
 private:
   const std::string ip_;
