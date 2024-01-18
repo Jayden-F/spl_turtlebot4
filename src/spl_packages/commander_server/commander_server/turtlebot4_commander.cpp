@@ -99,8 +99,10 @@ void commander_server::turtlebot4_commander::post_request(std::string path,
       " \r\n" + "Connection: close\r\n Accept: */*\r\n User-Agent: " +
       std::to_string(id_) +
       "\r\n Content-Type: applications/json\r\n Content-Length: " +
-      std::to_string(serial_payload.length()) + "\r\n" + "\r\n" +
+      std::to_string(serial_payload.length()) + "\r\n\r\n" +
       serial_payload);
+
+  RCLCPP_INFO(this->get_logger(), "Sending: %s", request.c_str());
 
   socket_.send(boost::asio::buffer(request));
   std::string response;
