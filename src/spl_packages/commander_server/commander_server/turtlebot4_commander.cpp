@@ -4,14 +4,15 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      socket_(io_service_), is_executing_(1), pose_() {
+      socket_(io_service_), is_executing_(1), pose_(), num_poses_(0) {
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
       ip_.c_str(), port_);
 
   navigate_to_pose_client_ptr_ =
-      rclcpp_action::create_client<NavigateToPose>(this, "/navigate_to_pose");
+      rclcpp_action::create_client<NavigateThroughPoses>(this,
+                                                         "/navigate_to_pose");
 
   pose_subscriber_ptr_ = create_subscription<PoseWithCovarianceStamped>(
       "/amcl_pose", 10,
@@ -24,56 +25,62 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
                 this));
 
   // Connect to the central controller
-  while (true) {
-    try {
-      socket_.connect(boost::asio::ip::tcp::endpoint(
-          boost::asio::ip::address::from_string(ip_), port_));
-      break;
-    } catch (boost::system::system_error &e) {
-      RCLCPP_WARN(this->get_logger(), "Error: %s", e.what());
-    }
+  boost::asio::connect(socket_,
+                       boost::asio::ip::tcp::endpoint(
+                           boost::asio::ip::address::from_string(ip_), port_));
+}
+
+void comammander_server::turtlebot4_commander::reset_state() {
+  is_executing_ = false;
+  num_poses_ = 0;
+}
+commander_server::json commander_server::turtlebot4_commander::make_request(
+    boost::asio::streambuf &request) {
+
+  boost::system::error_code ec;
+  boost::asio::write(socket_, request);
+
+  boost::asio::streambuf response;
+  boost::asio::read(socket_, response, ec);
+  std::istream response_stream(&response);
+  std::string response_string;
+  std::getline(response_stream, response_string);
+
+  if (response_string.empty()) {
+    RCLCPP_WARN(this->get_logger(), "Response was empty");
   }
+
+  uint64_t split = response_string.rfind('\n', response_string.length());
+  std::string data =
+      response_string.substr(split, response_string.length() - split);
+  return json::parse(data);
 }
 
 commander_server::PoseStamped
 commander_server::turtlebot4_commander::get_request() {
-  boost::system::error_code ec;
+  boost::asio::streambuf request;
+  std::ostream request_stream(&request);
+  request_stream << "GET /?agent_id=" + std::to_string(id_) +
+                        " HTTP/1.1\r\n\r\n";
 
-  // no need to build a string everytime should be const but lazy
-  const std::string request("GET /?agent_id=" + std::to_string(id_) +
-                            " HTTP/1.1\r\n\r\n");
-  socket_.send(boost::asio::buffer(request));
-
-  std::string response;
-  do {
-    char buf[1024];
-    size_t bytes_transferred =
-        socket_.receive(boost::asio::buffer(buf), {}, ec);
-    if (!ec) {
-      response.append(buf, buf + bytes_transferred);
-    }
-  } while (!ec);
-
-  if (response.empty()) {
-    RCLCPP_WARN(this->get_logger(), "Response was empty");
-  }
-
-  uint64_t split = response.rfind('\n', response.length());
-  std::string data = response.substr(split, response.length() - split);
-  json json_received = json::parse(data);
+  json json_received = make_request(request);
 
   // read the position from the json in format [x, y, theta]
-  std::vector<json> position = json_received["position"];
-  float x = position[0].get<float>();
-  float y = position[1].get<float>();
-  int theta = position[2].get<int>();
+  std::vector<json> positions = json_received["positions"];
+  std::vector<Posestamped> poses(positions.size());
 
-  return get_pose_stamped(x, y, theta);
+  for (std::vector<json> pose : positions) {
+    float x = pose[0].get<float>();
+    float y = pose[1].get<float>();
+    int theta = pose[2].get<int>();
+
+    poses.push_back(get_pose_stamped(x, y, theta));
+  }
+  return poses;
 }
 
-commander_server::json
-commander_server::turtlebot4_commander::json_post_format(Pose pose,
-                                                         std::string status) {
+commander_server::json commander_server::turtlebot4_commander::json_post_format(
+    Pose pose, std::string status, uint32_t pose_number) {
 
   json json_pose = json::object();
   json_pose["x"] = pose.position.x;
@@ -81,19 +88,24 @@ commander_server::turtlebot4_commander::json_post_format(Pose pose,
   json_pose["theta"] =
       asin(pose.orientation.z) * 2 * 180 / PI; // magic backtracking trust me
 
+  json progress = json::object();
+  progress["current"] = pose_number;
+  progress["total"] = num_poses_;
+
   json payload = json::object();
   payload["agent_id"] = id_;
   payload["status"] = status;
   payload["pose"] = json_pose;
+  payload["progress"] = progress;
 
   return payload;
 }
 
 void commander_server::turtlebot4_commander::post_request(std::string path,
                                                           json payload) {
+
   boost::system::error_code ec;
   std::string serial_payload = payload.dump();
-
   boost::asio::streambuf request;
   std::ostream request_stream(&request);
 
@@ -105,17 +117,14 @@ void commander_server::turtlebot4_commander::post_request(std::string path,
                  << "Content-Length: " << serial_payload.length() << "\r\n\r\n"
                  << serial_payload;
 
-  boost::asio::write(socket_, request);
-  boost::asio::streambuf response;
-  boost::asio::read_until(socket_, response, "\r\n", ec);
-  std::istream response_stream(&response);
+  json json_received = make_request(request);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose(
-    PoseStamped pose) {
+    std::vector<PoseStamped> poses) {
   RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
-  this->navigate_to_pose_send_goal(pose);
+  navigate_to_pose_send_goal(poses);
 }
 
 commander_server::PoseStamped
@@ -137,15 +146,18 @@ commander_server::turtlebot4_commander::get_pose_stamped(float x, float y,
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_send_goal(
-    PoseStamped pose) {
+    std::vector<PoseStamped> poses) {
 
-  auto goal_msg = NavigateToPose::Goal();
-  goal_msg.pose = pose;
+  auto goal_msg = NavigateThroughPoses::Goal();
+  goal_msg.poses = poses;
+  num_poses_ = poses.size();
+  // TODO: verify if we have to specify behaviour tree
+  goal_msg.behavior_tree = "";
 
   navigate_to_pose_client_ptr_->wait_for_action_server();
 
   auto send_goal_options =
-      rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
+      rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();
   send_goal_options.goal_response_callback =
       std::bind(&commander_server::turtlebot4_commander::
                     navigate_to_pose_goal_response_callback,
@@ -163,11 +175,11 @@ void commander_server::turtlebot4_commander::navigate_to_pose_send_goal(
 
 void commander_server::turtlebot4_commander::
     navigate_to_pose_goal_response_callback(
-        const GoalHandleNavigateToPose::SharedPtr goal_handle) {
+        const GoalHandleNavigateThroughPoses::SharedPtr goal_handle) {
 
   if (!goal_handle) {
     RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
-    is_executing_ = false;
+    reset_state();
   } else {
     RCLCPP_INFO(this->get_logger(),
                 "Goal accepted by server, waiting for result");
@@ -175,21 +187,25 @@ void commander_server::turtlebot4_commander::
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
-    GoalHandleNavigateToPose::SharedPtr,
-    const std::shared_ptr<const NavigateToPose::Feedback> feedback) {
+    GoalHandleNavigateThroughPoses::SharedPtr,
+    const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback) {
 
   pose_ = feedback->current_pose.pose;
-  RCLCPP_INFO(this->get_logger(), "Received feedback: %f, %f, %f",
+  int16_t progress = num_poses_ - feedback->number_of_poses_remaining;
+
+  RCLCPP_INFO(this->get_logger(),
+              "Received feedback: %f, %f, %f Progress: %d/%d",
               feedback->current_pose.pose.position.x,
               feedback->current_pose.pose.position.y,
-              feedback->current_pose.pose.orientation.z);
+              feedback->current_pose.pose.orientation.z, progress, num_poses_);
 
-  json payload = json_post_format(feedback->current_pose.pose, "executing");
+  json payload =
+      json_post_format(feedback->current_pose.pose, "executing", progress);
   post_request("/", payload);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
-    const GoalHandleNavigateToPose::WrappedResult &result) {
+    const GoalHandleNavigateThroughPoses::WrappedResult &result) {
 
   std::map<rclcpp_action::ResultCode, std::string> status{
       {rclcpp_action::ResultCode::SUCCEEDED, "success"},
@@ -201,9 +217,9 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
   RCLCPP_INFO(this->get_logger(), "Goal Status: %s",
               status[result.code].c_str());
 
-  json payload = json_post_format(pose_, status[result.code]);
+  json payload = json_post_format(pose_, status[result.code], 0);
   post_request("/", payload);
-  is_executing_ = false;
+  reset_state();
 }
 
 void commander_server::turtlebot4_commander::pose_topic_callback(
@@ -211,10 +227,11 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   RCLCPP_INFO(this->get_logger(), "Pose: %f, %f, %f", msg->pose.pose.position.x,
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
-  json payload = json_post_format(msg->pose.pose, "succeeded");
+  json payload = json_post_format(msg->pose.pose, "succeeded", num_poses_);
   post_request("/extend_path", payload);
   pose_subscriber_ptr_.reset();
-  is_executing_ = false;
+
+  reset_state();
 }
 
 void commander_server::turtlebot4_commander::polling_callback() {
@@ -227,6 +244,7 @@ void commander_server::turtlebot4_commander::polling_callback() {
   PoseStamped pose = get_request();
   navigate_to_pose(pose);
 }
+
 namespace po = boost::program_options;
 
 int main(int argc, char **argv) {
