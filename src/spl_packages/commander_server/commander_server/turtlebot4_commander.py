@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import argparse
 import json
 import os
@@ -210,7 +212,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--id", type=int, default=0)
     args = parser.parse_args()
-    rclpy.init(args=args)
+    rclpy.init(args=None)
     commander = Turtlebot4_Commander(args.id)
     try:
         rclpy.spin(commander)
