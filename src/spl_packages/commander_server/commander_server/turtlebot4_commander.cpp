@@ -49,6 +49,7 @@ commander_server::json commander_server::turtlebot4_commander::make_request(
 
   if (response_string.empty()) {
     RCLCPP_WARN(this->get_logger(), "Response was empty");
+    return json::object();
   }
 
   uint64_t split = response_string.rfind('\n', response_string.length());
