@@ -66,8 +66,13 @@ commander_server::turtlebot4_commander::get_request() {
 
   json json_received = make_request(request);
 
+  std::cout << json_received << std::endl;
+
   // read the position from the json in format [x, y, theta]
   std::vector<json> positions = json_received["positions"];
+
+  std::cout << positions << ',' << positions << positions.size() << std::endl;
+
   std::vector<PoseStamped> poses(positions.size());
 
   for (std::vector<json> pose : positions) {
@@ -80,6 +85,9 @@ commander_server::turtlebot4_commander::get_request() {
   return poses;
 }
 
+// TODO split how json is created for different post request paths /
+// /extend_plan
+// /
 commander_server::json commander_server::turtlebot4_commander::json_post_format(
     Pose pose, std::string status, uint32_t pose_number) {
 
@@ -90,7 +98,7 @@ commander_server::json commander_server::turtlebot4_commander::json_post_format(
   json_pose["theta"] =
       asin(pose.orientation.z) * 2 * 180 / PI; // magic backtracking trust me
 
-  json plans  = json::array({ json_pose });
+  json plans = json::array({json_pose});
 
   json progress = json::object();
   progress["current"] = pose_number;
