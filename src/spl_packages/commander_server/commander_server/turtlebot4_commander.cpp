@@ -89,6 +89,8 @@ commander_server::json commander_server::turtlebot4_commander::json_post_format(
   json_pose["theta"] =
       asin(pose.orientation.z) * 2 * 180 / PI; // magic backtracking trust me
 
+  json plans  = json::array({ json_pose });
+
   json progress = json::object();
   progress["current"] = pose_number;
   progress["total"] = num_poses_;
@@ -97,6 +99,8 @@ commander_server::json commander_server::turtlebot4_commander::json_post_format(
   payload["agent_id"] = id_;
   payload["status"] = status;
   payload["pose"] = json_pose;
+  payload["plans"] = plans;
+
   payload["progress"] = progress;
 
   return payload;
