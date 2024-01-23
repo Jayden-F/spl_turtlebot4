@@ -44,10 +44,8 @@ std::string commander_server::turtlebot4_commander::make_request(
   boost::asio::streambuf response;
   boost::asio::read(socket_, response, ec);
   std::istream response_stream(&response);
-  std::string response_string;
-  std::getline(response_stream, response_string);
-
-  return response_string;
+  std::string s(std::istreambuf_iterator<char>(response_stream), {});
+  return s;
 }
 
 std::vector<commander_server::PoseStamped>
@@ -60,6 +58,7 @@ commander_server::turtlebot4_commander::get_request() {
   std::string data = make_request(request);
 
   RCLCPP_ERROR(this->get_logger(), data.c_str());
+
   json json_received = json::parse(data);
 
   // read the position from the json in format [x, y, theta]
