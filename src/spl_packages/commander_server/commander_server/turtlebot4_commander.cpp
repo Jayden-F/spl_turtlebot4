@@ -84,6 +84,7 @@ commander_server::json commander_server::turtlebot4_commander::json_post_format(
     Pose pose, std::string status, uint32_t pose_number) {
 
   json json_pose = json::object();
+  json_pose["agent_id"] = id_;
   json_pose["x"] = pose.position.x;
   json_pose["y"] = pose.position.y;
   json_pose["theta"] =
@@ -100,7 +101,6 @@ commander_server::json commander_server::turtlebot4_commander::json_post_format(
   payload["status"] = status;
   payload["pose"] = json_pose;
   payload["plans"] = plans;
-
   payload["progress"] = progress;
 
   return payload;
