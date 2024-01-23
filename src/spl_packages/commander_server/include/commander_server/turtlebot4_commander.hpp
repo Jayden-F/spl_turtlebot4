@@ -52,7 +52,7 @@ private:
 
   void reset_state();
 
-  json make_request(boost::asio::streambuf &request);
+  std::string make_request(boost::asio::streambuf &request);
 
   json json_post_format(Pose pose, std::string status, uint32_t pose_number);
 

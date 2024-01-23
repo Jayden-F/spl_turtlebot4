@@ -35,7 +35,7 @@ void commander_server::turtlebot4_commander::reset_state() {
   is_executing_ = false;
   num_poses_ = 0;
 }
-commander_server::json commander_server::turtlebot4_commander::make_request(
+std::string commander_server::turtlebot4_commander::make_request(
     boost::asio::streambuf &request) {
 
   boost::system::error_code ec;
@@ -47,16 +47,7 @@ commander_server::json commander_server::turtlebot4_commander::make_request(
   std::string response_string;
   std::getline(response_stream, response_string);
 
-  std::cout << response_string << std::endl;
-  if (response_string.empty()) {
-    RCLCPP_WARN(this->get_logger(), "Response was empty");
-    return json::object();
-  }
-
-  uint64_t split = response_string.rfind('\n', response_string.length());
-  std::string data =
-      response_string.substr(split, response_string.length() - split);
-  return json::parse(data);
+  return response_string;
 }
 
 std::vector<commander_server::PoseStamped>
@@ -132,7 +123,7 @@ void commander_server::turtlebot4_commander::post_request(std::string path,
                  << "Content-Length: " << serial_payload.length() << "\r\n\r\n"
                  << serial_payload;
 
-  json json_received = make_request(request);
+  make_request(request);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose(
