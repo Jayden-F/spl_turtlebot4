@@ -50,9 +50,11 @@ private:
   bool is_executing_;
   uint32_t num_poses_;
 
+  void reset_state();
+
   json make_request(boost::asio::streambuf &request);
 
-  json json_post_format(Pose pose, std::string status);
+  json json_post_format(Pose pose, std::string status, uint32_t pose_number);
 
   std::vector<PoseStamped> get_request();
 

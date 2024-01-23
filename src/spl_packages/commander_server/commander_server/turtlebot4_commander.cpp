@@ -25,12 +25,13 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
                 this));
 
   // Connect to the central controller
-  boost::asio::connect(socket_,
-                       boost::asio::ip::tcp::endpoint(
-                           boost::asio::ip::address::from_string(ip_), port_));
+
+  boost::asio::ip::tcp::resolver r(io_service_);
+  boost::asio::ip::tcp::resolver::query q(ip_, std::to_string(port_));
+  boost::asio::connect(socket_, r.resolve(q));
 }
 
-void comammander_server::turtlebot4_commander::reset_state() {
+void commander_server::turtlebot4_commander::reset_state() {
   is_executing_ = false;
   num_poses_ = 0;
 }
@@ -56,7 +57,7 @@ commander_server::json commander_server::turtlebot4_commander::make_request(
   return json::parse(data);
 }
 
-commander_server::PoseStamped
+std::vector<commander_server::PoseStamped>
 commander_server::turtlebot4_commander::get_request() {
   boost::asio::streambuf request;
   std::ostream request_stream(&request);
@@ -67,7 +68,7 @@ commander_server::turtlebot4_commander::get_request() {
 
   // read the position from the json in format [x, y, theta]
   std::vector<json> positions = json_received["positions"];
-  std::vector<Posestamped> poses(positions.size());
+  std::vector<PoseStamped> poses(positions.size());
 
   for (std::vector<json> pose : positions) {
     float x = pose[0].get<float>();
@@ -191,7 +192,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
     const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback) {
 
   pose_ = feedback->current_pose.pose;
-  int16_t progress = num_poses_ - feedback->number_of_poses_remaining;
+  uint32_t progress = num_poses_ - feedback->number_of_poses_remaining;
 
   RCLCPP_INFO(this->get_logger(),
               "Received feedback: %f, %f, %f Progress: %d/%d",
@@ -241,8 +242,8 @@ void commander_server::turtlebot4_commander::polling_callback() {
   };
 
   is_executing_ = true;
-  PoseStamped pose = get_request();
-  navigate_to_pose(pose);
+  std::vector<PoseStamped> poses = get_request();
+  navigate_to_pose(poses);
 }
 
 namespace po = boost::program_options;
