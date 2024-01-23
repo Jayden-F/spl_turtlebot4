@@ -47,6 +47,7 @@ commander_server::json commander_server::turtlebot4_commander::make_request(
   std::string response_string;
   std::getline(response_stream, response_string);
 
+  std::cout << response_string << std::endl;
   if (response_string.empty()) {
     RCLCPP_WARN(this->get_logger(), "Response was empty");
     return json::object();
@@ -241,7 +242,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   RCLCPP_INFO(this->get_logger(), "Pose: %f, %f, %f", msg->pose.pose.position.x,
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
-  json payload = json_post_format(msg->pose.pose, "succeeded", num_poses_);
+  json payload = json_post_format(msg->pose.pose, "succeeded", 1);
   post_request("/extend_path", payload);
   pose_subscriber_ptr_.reset();
 
