@@ -57,9 +57,10 @@ commander_server::turtlebot4_commander::get_request() {
   request_stream << "GET /?agent_id=" + std::to_string(id_) +
                         " HTTP/1.1\r\n\r\n";
 
-  json json_received = make_request(request);
+  std::string data = make_request(request);
 
-  std::cout << json_received << std::endl;
+  RCLCPP_ERROR(this->get_logger(), data );
+  json json_received = json::parse(data);
 
   // read the position from the json in format [x, y, theta]
   std::vector<json> positions = json_received["positions"];
