@@ -59,7 +59,7 @@ commander_server::turtlebot4_commander::get_request() {
 
   std::string data = make_request(request);
 
-  RCLCPP_ERROR(this->get_logger(), data );
+  RCLCPP_ERROR(this->get_logger(), data.c_str());
   json json_received = json::parse(data);
 
   // read the position from the json in format [x, y, theta]
