@@ -45,7 +45,6 @@ std::string commander_server::turtlebot4_commander::make_request(
   req.set(http::field::host, ip_);
   req.set(http::field::user_agent, std::to_string(id_));
   req.set(http::field::content_type, "application/json");
-  req.keep_alive(true);
   req.body() = body.dump();
   req.prepare_payload();
 
@@ -69,6 +68,8 @@ std::string commander_server::turtlebot4_commander::make_request(
   std::string data = boost::beast::buffers_to_string(res.body().data());
 
   RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
+
+
   return data;
 }
 
@@ -83,7 +84,6 @@ commander_server::turtlebot4_commander::get_request() {
 
   std::string data =
       make_request(boost::beast::http::verb::get, "/", json_pose);
-
 
   nlohmann::json json_received = nlohmann::json::parse(data);
 
