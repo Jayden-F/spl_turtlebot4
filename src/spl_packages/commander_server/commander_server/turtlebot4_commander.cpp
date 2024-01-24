@@ -52,6 +52,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   // Send the HTTP request to the remote host
   RCLCPP_INFO(this->get_logger(), "Writing Request");
   http::write(stream_, req, ec);
+  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   // This buffer is used for reading and must be persisted
   boost::beast::flat_buffer buffer;
@@ -62,6 +63,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   // Receive the HTTP response
   RCLCPP_INFO(this->get_logger(), "Reading Response");
   http::read(stream_, buffer, res, ec);
+  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   RCLCPP_INFO(this->get_logger(), "Converting to string");
   std::string data = boost::beast::buffers_to_string(res.body().data());
@@ -73,10 +75,15 @@ std::string commander_server::turtlebot4_commander::make_request(
 std::vector<commander_server::PoseStamped>
 commander_server::turtlebot4_commander::get_request() {
 
-  std::string data = make_request(boost::beast::http::verb::get, "/",
-                                  nlohmann::json::object());
+  RCLCPP_INFO(this->get_logger(),
+              "Requesting positions from central controller");
 
-  RCLCPP_ERROR(this->get_logger(), "%s", data.c_str());
+  nlohmann::json json_pose = nlohmann::json::object();
+  json_pose["agent_id"] = id_;
+
+  std::string data =
+      make_request(boost::beast::http::verb::get, "/", json_pose);
+
 
   nlohmann::json json_received = nlohmann::json::parse(data);
 
