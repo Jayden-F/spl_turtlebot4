@@ -44,6 +44,7 @@ commander_server::turtlebot4_commander::make_request(boost::beast::http::verb ve
   req.set(http::field::host, ip_);
   req.set(http::field::user_agent, std::to_string(id_));
   req.set(http::field::content_type, "application/json");
+  req.keep_alive(true);
   req.body() = body.dump();
   req.prepare_payload();
 
