@@ -36,11 +36,11 @@ void commander_server::turtlebot4_commander::reset_state() {
 }
 
 std::string
-commander_server::turtlebot4_commander::make_request(std::string target,
+commander_server::turtlebot4_commander::make_request(boost::beast::http::verb verb,std::string target,
                                                      nlohmann::json body) {
   namespace http = boost::beast::http;
 
-  http::request<http::string_body> req{http::verb::get, target, 11};
+  http::request<http::string_body> req{verb, target, 11};
   req.set(http::field::host, ip_);
   req.set(http::field::user_agent, std::to_string(id_));
   req.set(http::field::content_type, "application/json");
@@ -69,7 +69,7 @@ commander_server::turtlebot4_commander::make_request(std::string target,
 std::vector<commander_server::PoseStamped>
 commander_server::turtlebot4_commander::get_request() {
 
-  std::string data = make_request("/", nlohmann::json::object());
+  std::string data = make_request(boost::beast::http::verb::get, "/", nlohmann::json::object());
 
   RCLCPP_ERROR(this->get_logger(), "%s", data.c_str());
 
@@ -202,7 +202,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
 
   nlohmann::json payload =
       json_post_format(feedback->current_pose.pose, "executing", progress);
-  make_request("/", payload);
+  make_request(boost::beast::http::verb::post, "/", payload);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
@@ -219,7 +219,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
               status[result.code].c_str());
 
   nlohmann::json payload = json_post_format(pose_, status[result.code], 0);
-  make_request("/", payload);
+  make_request(boost::beast::http::verb::post, "/", payload);
   reset_state();
 }
 
@@ -229,7 +229,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
   nlohmann::json payload = json_post_format(msg->pose.pose, "succeeded", 1);
-  make_request("/extend_path", payload);
+  make_request(boost::beast::http::verb::post, "/extend_path", payload);
   pose_subscriber_ptr_.reset();
 
   reset_state();

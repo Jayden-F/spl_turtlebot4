@@ -54,7 +54,8 @@ private:
 
   void reset_state();
 
-  std::string make_request(std::string target, nlohmann::json body);
+  std::string make_request(boost::beast::http::verb verb, std::string target,
+                           nlohmann::json body);
 
   nlohmann::json json_post_format(Pose pose, std::string status,
                                   uint32_t pose_number);
