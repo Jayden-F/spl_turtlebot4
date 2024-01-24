@@ -7,11 +7,11 @@
 #include "nav2_msgs/action/navigate_through_poses.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-#include <boost/beast/http/message.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/beast.hpp>
+#include <boost/beast/http/message.hpp>
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <map>
@@ -56,11 +56,10 @@ private:
 
   std::string make_request(std::string target, nlohmann::json body);
 
-  nlohmann::json json_post_format(Pose pose, std::string status, uint32_t pose_number);
+  nlohmann::json json_post_format(Pose pose, std::string status,
+                                  uint32_t pose_number);
 
   std::vector<PoseStamped> get_request();
-
-  void post_request(std::string path, nlohmann::json payload);
 
   void navigate_to_pose(std::vector<PoseStamped> poses);
 

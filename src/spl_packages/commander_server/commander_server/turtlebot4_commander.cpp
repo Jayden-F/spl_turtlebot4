@@ -5,20 +5,18 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
       pose_(), stream_(ioc_), is_executing_(1), num_poses_(0) {
+
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
       ip_.c_str(), port_);
-
   navigate_to_pose_client_ptr_ =
       rclcpp_action::create_client<NavigateThroughPoses>(this,
                                                          "/navigate_to_pose");
-
   pose_subscriber_ptr_ = create_subscription<PoseWithCovarianceStamped>(
       "/amcl_pose", 10,
       std::bind(&commander_server::turtlebot4_commander::pose_topic_callback,
                 this, std::placeholders::_1));
-
   timer_ = this->create_wall_timer(
       std::chrono::milliseconds(100),
       std::bind(&commander_server::turtlebot4_commander::polling_callback,
@@ -70,13 +68,9 @@ commander_server::turtlebot4_commander::make_request(std::string target,
 
 std::vector<commander_server::PoseStamped>
 commander_server::turtlebot4_commander::get_request() {
-  boost::asio::streambuf request;
-  std::ostream request_stream(&request);
-  request_stream << "GET /?agent_id=" + std::to_string(id_) +
-                        " HTTP/1.1\r\n\r\n";
 
-  // std::string data = make_request(request);
-  std::string data = "";
+  std::string data = make_request("/", nlohmann::json::object());
+
   RCLCPP_ERROR(this->get_logger(), "%s", data.c_str());
 
   nlohmann::json json_received = nlohmann::json::parse(data);
@@ -125,22 +119,6 @@ nlohmann::json commander_server::turtlebot4_commander::json_post_format(
   payload["progress"] = progress;
 
   return payload;
-}
-
-void commander_server::turtlebot4_commander::post_request(
-    std::string path, nlohmann::json payload) {
-
-  std::string serial_payload = payload.dump();
-  boost::asio::streambuf request;
-  std::ostream request_stream(&request);
-
-  request_stream << "POST " << path.c_str() << " HTTP/1.1\r\n"
-                 << "Host: " << ip_.c_str() << "\r\n"
-                 << "Accept: */*\r\n"
-                 << "User-Agent: " << std::to_string(id_) << "\r\n"
-                 << "Content-Type: applications/json\r\n"
-                 << "Content-Length: " << serial_payload.length() << "\r\n\r\n"
-                 << serial_payload;
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose(
@@ -224,7 +202,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
 
   nlohmann::json payload =
       json_post_format(feedback->current_pose.pose, "executing", progress);
-  post_request("/", payload);
+  make_request("/", payload);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
@@ -241,7 +219,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
               status[result.code].c_str());
 
   nlohmann::json payload = json_post_format(pose_, status[result.code], 0);
-  post_request("/", payload);
+  make_request("/", payload);
   reset_state();
 }
 
@@ -251,7 +229,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
   nlohmann::json payload = json_post_format(msg->pose.pose, "succeeded", 1);
-  post_request("/extend_path", payload);
+  make_request("/extend_path", payload);
   pose_subscriber_ptr_.reset();
 
   reset_state();
