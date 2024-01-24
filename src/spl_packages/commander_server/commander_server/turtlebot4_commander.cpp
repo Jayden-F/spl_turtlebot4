@@ -4,7 +4,7 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      socket_(io_service_), is_executing_(1), pose_(), num_poses_(0) {
+      pose_(), stream_(ioc_), is_executing_(1), num_poses_(0) {
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
@@ -26,26 +26,46 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
 
   // Connect to the central controller
 
-  boost::asio::ip::tcp::resolver r(io_service_);
-  boost::asio::ip::tcp::resolver::query q(ip_, std::to_string(port_));
-  boost::asio::connect(socket_, r.resolve(q));
+  boost::asio::ip::tcp::resolver r(ioc_);
+  auto const results = r.resolve(ip_, std::to_string(port_));
+  stream_.connect(results);
 }
 
 void commander_server::turtlebot4_commander::reset_state() {
   is_executing_ = false;
   num_poses_ = 0;
 }
-std::string commander_server::turtlebot4_commander::make_request(
-    boost::asio::streambuf &request) {
 
-  boost::system::error_code ec;
-  boost::asio::write(socket_, request);
+std::string
+commander_server::turtlebot4_commander::make_request(std::string target,
+                                                     nlohmann::json body) {
+  namespace http = boost::beast::http;
 
-  boost::asio::streambuf response;
-  boost::asio::read(socket_, response, ec);
-  std::istream response_stream(&response);
-  std::string s(std::istreambuf_iterator<char>(response_stream), {});
-  return s;
+  http::request<http::string_body> req{http::verb::get, target, 11};
+  req.set(http::field::host, ip_);
+  req.set(http::field::user_agent, std::to_string(id_));
+  req.set(http::field::content_type, "application/json");
+  req.body() = body.dump();
+  req.prepare_payload();
+
+  // Send the HTTP request to the remote host
+  http::write(stream_, req);
+
+  // This buffer is used for reading and must be persisted
+  boost::beast::flat_buffer buffer;
+
+  // Declare a container to hold the response
+  http::response<http::dynamic_body> res;
+
+  // Receive the HTTP response
+  http::read(stream_, buffer, res);
+
+  std::string data = boost::beast::buffers_to_string(res.body().data());
+
+  RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
+
+  return data;
+
 }
 
 std::vector<commander_server::PoseStamped>
@@ -55,20 +75,20 @@ commander_server::turtlebot4_commander::get_request() {
   request_stream << "GET /?agent_id=" + std::to_string(id_) +
                         " HTTP/1.1\r\n\r\n";
 
-  std::string data = make_request(request);
+  // std::string data = make_request(request);
+  std::string data = "";
+  RCLCPP_ERROR(this->get_logger(), "%s", data.c_str());
 
-  RCLCPP_ERROR(this->get_logger(), data.c_str());
-
-  json json_received = json::parse(data);
+  nlohmann::json json_received = nlohmann::json::parse(data);
 
   // read the position from the json in format [x, y, theta]
-  std::vector<json> positions = json_received["positions"];
+  std::vector<nlohmann::json> positions = json_received["positions"];
 
   std::cout << positions << ',' << positions << positions.size() << std::endl;
 
   std::vector<PoseStamped> poses(positions.size());
 
-  for (std::vector<json> pose : positions) {
+  for (std::vector<nlohmann::json> pose : positions) {
     float x = pose[0].get<float>();
     float y = pose[1].get<float>();
     int theta = pose[2].get<int>();
@@ -81,23 +101,23 @@ commander_server::turtlebot4_commander::get_request() {
 // TODO split how json is created for different post request paths /
 // /extend_plan
 // /
-commander_server::json commander_server::turtlebot4_commander::json_post_format(
+nlohmann::json commander_server::turtlebot4_commander::json_post_format(
     Pose pose, std::string status, uint32_t pose_number) {
 
-  json json_pose = json::object();
+  nlohmann::json json_pose = nlohmann::json::object();
   json_pose["agent_id"] = id_;
   json_pose["x"] = pose.position.x;
   json_pose["y"] = pose.position.y;
   json_pose["theta"] =
       asin(pose.orientation.z) * 2 * 180 / PI; // magic backtracking trust me
 
-  json plans = json::array({json_pose});
+  nlohmann::json plans = nlohmann::json::array({json_pose});
 
-  json progress = json::object();
+  nlohmann::json progress = nlohmann::json::object();
   progress["current"] = pose_number;
   progress["total"] = num_poses_;
 
-  json payload = json::object();
+  nlohmann::json payload = nlohmann::json::object();
   payload["agent_id"] = id_;
   payload["status"] = status;
   payload["pose"] = json_pose;
@@ -107,10 +127,9 @@ commander_server::json commander_server::turtlebot4_commander::json_post_format(
   return payload;
 }
 
-void commander_server::turtlebot4_commander::post_request(std::string path,
-                                                          json payload) {
+void commander_server::turtlebot4_commander::post_request(
+    std::string path, nlohmann::json payload) {
 
-  boost::system::error_code ec;
   std::string serial_payload = payload.dump();
   boost::asio::streambuf request;
   std::ostream request_stream(&request);
@@ -122,8 +141,6 @@ void commander_server::turtlebot4_commander::post_request(std::string path,
                  << "Content-Type: applications/json\r\n"
                  << "Content-Length: " << serial_payload.length() << "\r\n\r\n"
                  << serial_payload;
-
-  make_request(request);
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose(
@@ -205,7 +222,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
               feedback->current_pose.pose.position.y,
               feedback->current_pose.pose.orientation.z, progress, num_poses_);
 
-  json payload =
+  nlohmann::json payload =
       json_post_format(feedback->current_pose.pose, "executing", progress);
   post_request("/", payload);
 }
@@ -223,7 +240,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
   RCLCPP_INFO(this->get_logger(), "Goal Status: %s",
               status[result.code].c_str());
 
-  json payload = json_post_format(pose_, status[result.code], 0);
+  nlohmann::json payload = json_post_format(pose_, status[result.code], 0);
   post_request("/", payload);
   reset_state();
 }
@@ -233,7 +250,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   RCLCPP_INFO(this->get_logger(), "Pose: %f, %f, %f", msg->pose.pose.position.x,
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
-  json payload = json_post_format(msg->pose.pose, "succeeded", 1);
+  nlohmann::json payload = json_post_format(msg->pose.pose, "succeeded", 1);
   post_request("/extend_path", payload);
   pose_subscriber_ptr_.reset();
 

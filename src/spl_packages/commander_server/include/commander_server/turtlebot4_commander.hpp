@@ -7,8 +7,11 @@
 #include "nav2_msgs/action/navigate_through_poses.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include <boost/beast/http/message.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/address.hpp>
+#include <boost/beast.hpp>
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <map>
@@ -20,7 +23,6 @@ namespace commander_server {
 
 #define PI 3.14159265
 
-using json = nlohmann::json;
 using Pose = geometry_msgs::msg::Pose;
 using PoseStamped = geometry_msgs::msg::PoseStamped;
 using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
@@ -44,21 +46,21 @@ private:
       navigate_to_pose_client_ptr_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr
       pose_subscriber_ptr_;
-  boost::asio::io_service io_service_;
-  boost::asio::ip::tcp::socket socket_;
+  boost::asio::io_context ioc_;
+  boost::beast::tcp_stream stream_;
   rclcpp::TimerBase::SharedPtr timer_;
   bool is_executing_;
   uint32_t num_poses_;
 
   void reset_state();
 
-  std::string make_request(boost::asio::streambuf &request);
+  std::string make_request(std::string target, nlohmann::json body);
 
-  json json_post_format(Pose pose, std::string status, uint32_t pose_number);
+  nlohmann::json json_post_format(Pose pose, std::string status, uint32_t pose_number);
 
   std::vector<PoseStamped> get_request();
 
-  void post_request(std::string path, json payload);
+  void post_request(std::string path, nlohmann::json payload);
 
   void navigate_to_pose(std::vector<PoseStamped> poses);
 
