@@ -1,4 +1,5 @@
 #include "commander_server/turtlebot4_commander.hpp"
+#include <boost/beast/core/error.hpp>
 
 commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
@@ -38,6 +39,7 @@ void commander_server::turtlebot4_commander::reset_state() {
 std::string commander_server::turtlebot4_commander::make_request(
     boost::beast::http::verb verb, std::string target, nlohmann::json body) {
   namespace http = boost::beast::http;
+  boost::beast::error_code ec;
 
   http::request<http::string_body> req{verb, target, 11};
   req.set(http::field::host, ip_);
@@ -49,7 +51,7 @@ std::string commander_server::turtlebot4_commander::make_request(
 
   // Send the HTTP request to the remote host
   RCLCPP_INFO(this->get_logger(), "Writing Request");
-  http::write(stream_, req);
+  http::write(stream_, req, ec);
 
   // This buffer is used for reading and must be persisted
   boost::beast::flat_buffer buffer;
@@ -59,14 +61,13 @@ std::string commander_server::turtlebot4_commander::make_request(
 
   // Receive the HTTP response
   RCLCPP_INFO(this->get_logger(), "Reading Response");
-  http::read(stream_, buffer, res);
+  http::read(stream_, buffer, res, ec);
 
   RCLCPP_INFO(this->get_logger(), "Converting to string");
   std::string data = boost::beast::buffers_to_string(res.body().data());
 
   RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
   return data;
-
 }
 
 std::vector<commander_server::PoseStamped>
