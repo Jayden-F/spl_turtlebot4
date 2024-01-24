@@ -25,10 +25,11 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
                 this));
 
   // Connect to the central controller
-
+  RCLCPP_INFO(this->get_logger(), "Connecting to %s:%d", ip_.c_str(), port_);
   boost::asio::ip::tcp::resolver r(ioc_);
   auto const results = r.resolve(ip_, std::to_string(port_));
   stream_.connect(results);
+  RCLCPP_INFO(this->get_logger(), "Connected to %s:%d", ip_.c_str(), port_);
 }
 
 void commander_server::turtlebot4_commander::reset_state() {
@@ -65,7 +66,6 @@ commander_server::turtlebot4_commander::make_request(std::string target,
   RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
 
   return data;
-
 }
 
 std::vector<commander_server::PoseStamped>
