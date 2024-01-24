@@ -23,6 +23,11 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
       std::bind(&commander_server::turtlebot4_commander::polling_callback,
                 this));
 
+  connect_central_controller();
+}
+
+void commander_server::turtlebot4_commander::connect_central_controller() {
+
   // Connect to the central controller
   RCLCPP_INFO(this->get_logger(), "Connecting to %s:%d", ip_.c_str(), port_);
   boost::asio::ip::tcp::resolver r(ioc_);
@@ -41,34 +46,29 @@ std::string commander_server::turtlebot4_commander::make_request(
   namespace http = boost::beast::http;
   boost::beast::error_code ec;
 
+  // Keep trying to connect and send the request until successful
+
   http::request<http::string_body> req{verb, target, 11};
   req.set(http::field::host, ip_);
   req.set(http::field::user_agent, std::to_string(id_));
   req.set(http::field::content_type, "application/json");
+  req.set(http::field::connection, "keep-alive"); // Keep the connection alive
   req.body() = body.dump();
   req.prepare_payload();
 
   // Send the HTTP request to the remote host
   RCLCPP_INFO(this->get_logger(), "Writing Request");
   http::write(stream_, req, ec);
-  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
-  // This buffer is used for reading and must be persisted
-  boost::beast::flat_buffer buffer;
-
-  // Declare a container to hold the response
   http::response<http::dynamic_body> res;
 
   // Receive the HTTP response
   RCLCPP_INFO(this->get_logger(), "Reading Response");
-  http::read(stream_, buffer, res, ec);
-  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
+  http::read(stream_, buffer_, res, ec);
 
   RCLCPP_INFO(this->get_logger(), "Converting to string");
   std::string data = boost::beast::buffers_to_string(res.body().data());
-
   RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
-
 
   return data;
 }

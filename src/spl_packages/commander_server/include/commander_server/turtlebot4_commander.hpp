@@ -47,12 +47,15 @@ private:
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr
       pose_subscriber_ptr_;
   boost::asio::io_context ioc_;
+  boost::beast::flat_buffer buffer_;
   boost::beast::tcp_stream stream_;
   rclcpp::TimerBase::SharedPtr timer_;
   bool is_executing_;
   uint32_t num_poses_;
 
   void reset_state();
+
+  void connect_central_controller();
 
   std::string make_request(boost::beast::http::verb verb, std::string target,
                            nlohmann::json body);
