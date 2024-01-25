@@ -24,6 +24,8 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
                 this));
 
   connect_central_controller();
+  get_request();
+  get_request();
 }
 
 void commander_server::turtlebot4_commander::connect_central_controller() {
@@ -264,7 +266,7 @@ namespace po = boost::program_options;
 int main(int argc, char **argv) {
 
   std::string address;
-  uint16_t port;
+  uint16_t port
   uint32_t id;
 
   rclcpp::init(argc, argv);
@@ -282,3 +284,8 @@ int main(int argc, char **argv) {
 
   auto node = std::make_shared<commander_server::turtlebot4_commander>(
       id, address, port);
+
+  rclcpp::spin(node);
+  rclcpp::shutdown();
+  return 0;
+}
