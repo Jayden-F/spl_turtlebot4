@@ -1,5 +1,6 @@
 #include "commander_server/turtlebot4_commander.hpp"
 #include <boost/beast/core/error.hpp>
+#include <rclcpp/logging.hpp>
 
 commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
@@ -59,15 +60,17 @@ std::string commander_server::turtlebot4_commander::make_request(
   // Send the HTTP request to the remote host
   RCLCPP_INFO(this->get_logger(), "Writing Request");
   http::write(stream_, req, ec);
+  RCLCPP_INFO(this->get_logger(), ec.message().c_str());
 
   http::response<http::string_body> res;
 
   // Receive the HTTP response
   RCLCPP_INFO(this->get_logger(), "Reading Response");
   http::read(stream_, buffer_, res, ec);
+  RCLCPP_INFO(this->get_logger(), ec.message().c_str());
 
   RCLCPP_INFO(this->get_logger(), "Converting to string");
-  //std::string data = boost::beast::buffers_to_string(res.body());
+  // std::string data = boost::beast::buffers_to_string(res.body());
   RCLCPP_INFO(this->get_logger(), "%s", res.body().c_str());
 
   return res.body();
