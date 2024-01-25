@@ -242,6 +242,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
 
   nlohmann::json payload = json_post_format(msg->pose.pose, "succeeded", 1);
   make_request(boost::beast::http::verb::post, "/extend_path", payload);
+  make_request(boost::beast::http::verb::post, "/extend_path", payload);
   pose_subscriber_ptr_.reset();
 
   reset_state();
