@@ -24,6 +24,9 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
                 this));
 
   connect_central_controller();
+
+  get_request();
+  get_request();
 }
 
 void commander_server::turtlebot4_commander::connect_central_controller() {
