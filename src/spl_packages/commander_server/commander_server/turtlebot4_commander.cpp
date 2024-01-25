@@ -24,10 +24,6 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
       std::chrono::milliseconds(100),
       std::bind(&commander_server::turtlebot4_commander::polling_callback,
                 this));
-
-  connect_central_controller();
-  get_request();
-  get_request();
 }
 
 void commander_server::turtlebot4_commander::connect_central_controller() {
