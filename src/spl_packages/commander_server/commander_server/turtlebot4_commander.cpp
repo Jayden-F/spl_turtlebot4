@@ -6,7 +6,8 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      pose_(), stream_(ioc_), is_executing_(1), num_poses_(0) {
+      pose_(), stream_(ioc_, boost::asio::ip::tcp::v4()), is_executing_(1),
+      num_poses_(0) {
 
   RCLCPP_INFO(
       this->get_logger(),
@@ -57,8 +58,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   req.body() = body.dump();
   req.prepare_payload();
 
-  // Send the HTTP request to the remote host
-  RCLCPP_INFO(this->get_logger(), "Writing Request");
+  connect_central_controller();
   http::write(stream_, req, ec);
   RCLCPP_INFO(this->get_logger(), ec.message().c_str());
 
@@ -69,6 +69,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   http::read(stream_, buffer_, res, ec);
   RCLCPP_INFO(this->get_logger(), ec.message().c_str());
 
+  stream_.socket().close();
   RCLCPP_INFO(this->get_logger(), "Converting to string");
   // std::string data = boost::beast::buffers_to_string(res.body());
   RCLCPP_INFO(this->get_logger(), "%s", res.body().c_str());
