@@ -266,7 +266,7 @@ namespace po = boost::program_options;
 int main(int argc, char **argv) {
 
   std::string address;
-  uint16_t port
+  uint16_t port;
   uint32_t id;
 
   rclcpp::init(argc, argv);
