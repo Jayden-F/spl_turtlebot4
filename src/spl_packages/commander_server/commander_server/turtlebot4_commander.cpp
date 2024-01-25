@@ -67,10 +67,10 @@ std::string commander_server::turtlebot4_commander::make_request(
   http::read(stream_, buffer_, res, ec);
 
   RCLCPP_INFO(this->get_logger(), "Converting to string");
-  std::string data = boost::beast::buffers_to_string(res.body().data());
-  RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
+  //std::string data = boost::beast::buffers_to_string(res.body());
+  RCLCPP_INFO(this->get_logger(), "%s", res.body().c_str());
 
-  return data;
+  return res.body();
 }
 
 std::vector<commander_server::PoseStamped>
