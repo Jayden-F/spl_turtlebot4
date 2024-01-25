@@ -24,9 +24,6 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
                 this));
 
   connect_central_controller();
-
-  get_request();
-  get_request();
 }
 
 void commander_server::turtlebot4_commander::connect_central_controller() {
@@ -73,6 +70,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   std::string data = boost::beast::buffers_to_string(res.body().data());
   RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
 
+  stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_receive, ec);
   return data;
 }
 
@@ -284,8 +282,3 @@ int main(int argc, char **argv) {
 
   auto node = std::make_shared<commander_server::turtlebot4_commander>(
       id, address, port);
-
-  rclcpp::spin(node);
-  rclcpp::shutdown();
-  return 0;
-}
