@@ -48,8 +48,6 @@ std::string commander_server::turtlebot4_commander::make_request(
   namespace http = boost::beast::http;
   boost::beast::error_code ec;
 
-  // Keep trying to connect and send the request until successful
-
   http::request<http::string_body> req{verb, target, 11};
   req.set(http::field::host, ip_);
   req.set(http::field::user_agent, std::to_string(id_));
@@ -62,7 +60,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   RCLCPP_INFO(this->get_logger(), "Writing Request");
   http::write(stream_, req, ec);
 
-  http::response<http::dynamic_body> res;
+  http::response<http::string_body> res;
 
   // Receive the HTTP response
   RCLCPP_INFO(this->get_logger(), "Reading Response");
@@ -72,7 +70,6 @@ std::string commander_server::turtlebot4_commander::make_request(
   std::string data = boost::beast::buffers_to_string(res.body().data());
   RCLCPP_INFO(this->get_logger(), "%s", data.c_str());
 
-  stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_receive, ec);
   return data;
 }
 
