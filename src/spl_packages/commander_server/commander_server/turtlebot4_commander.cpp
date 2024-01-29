@@ -125,7 +125,7 @@ nlohmann::json commander_server::turtlebot4_commander::json_post_format(
   progress["total"] = num_poses_;
 
   nlohmann::json payload = nlohmann::json::object();
-  //payload["agent_id"] = id_;
+  payload["agent_id"] = id_;
   payload["status"] = status;
   payload["position"] = json_pose;
   payload["plans"] = plans;
