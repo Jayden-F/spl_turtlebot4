@@ -109,7 +109,7 @@ def generate_launch_description():
                     "controller_server",
                     "behavior_server",
                     "bt_navigator",
-                    # 'waypoint_follower',
+                    "waypoint_follower",
                 ]
             },
         ],
