@@ -112,7 +112,7 @@ nlohmann::json commander_server::turtlebot4_commander::json_post_format(
     Pose pose, std::string status, uint32_t pose_number) {
 
   nlohmann::json json_pose = nlohmann::json::object();
-  json_pose["agent_id"] = id_;
+  //json_pose["agent_id"] = id_;
   json_pose["x"] = pose.position.x;
   json_pose["y"] = pose.position.y;
   json_pose["theta"] =
