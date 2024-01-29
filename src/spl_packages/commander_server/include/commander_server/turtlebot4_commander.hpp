@@ -43,7 +43,7 @@ private:
   const uint32_t id_;
   Pose pose_;
   rclcpp_action::Client<NavigateThroughPoses>::SharedPtr
-      navigate_to_pose_client_ptr_;
+      navigate_through_poses_client_ptr_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr
       pose_subscriber_ptr_;
   boost::asio::io_context ioc_;

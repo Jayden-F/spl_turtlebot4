@@ -13,9 +13,9 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
       ip_.c_str(), port_);
-  navigate_to_pose_client_ptr_ =
-      rclcpp_action::create_client<NavigateThroughPoses>(this,
-                                                         "/navigate_to_pose");
+  navigate_through_poses_client_ptr_ =
+      rclcpp_action::create_client<NavigateThroughPoses>(
+          this, "/navigate_through_poses");
   pose_subscriber_ptr_ = create_subscription<PoseWithCovarianceStamped>(
       "/amcl_pose", 10,
       std::bind(&commander_server::turtlebot4_commander::pose_topic_callback,
@@ -175,7 +175,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_send_goal(
   // TODO: verify if we have to specify behaviour tree
   goal_msg.behavior_tree = "";
 
-  navigate_to_pose_client_ptr_->wait_for_action_server();
+  navigate_through_poses_client_ptr_->wait_for_action_server();
 
   auto send_goal_options =
       rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();
@@ -191,7 +191,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_send_goal(
       &commander_server::turtlebot4_commander::navigate_to_pose_result_callback,
       this, std::placeholders::_1);
 
-  navigate_to_pose_client_ptr_->async_send_goal(goal_msg, send_goal_options);
+  navigate_through_poses_client_ptr_->async_send_goal(goal_msg, send_goal_options);
 }
 
 void commander_server::turtlebot4_commander::
