@@ -55,6 +55,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   req.prepare_payload();
 
   connect_central_controller();
+
   http::write(stream_, req, ec);
   RCLCPP_INFO(this->get_logger(), ec.message().c_str());
 
@@ -135,6 +136,13 @@ nlohmann::json commander_server::turtlebot4_commander::json_post_format(
 
 void commander_server::turtlebot4_commander::navigate_to_pose(
     std::vector<PoseStamped> poses) {
+  RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
+  for (uint32_t i = 0; i < poses.size(); i++) {
+    PoseStamped &pose = poses[i];
+    RCLCPP_INFO(this->get_logger(), "Pose %d, (%f, %f, %f)", i,
+                pose.pose.position.x, pose.pose.position.y,
+                pose.pose.orientation.z);
+  }
   RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
   navigate_to_pose_send_goal(poses);
