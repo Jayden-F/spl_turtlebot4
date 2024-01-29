@@ -199,10 +199,12 @@ global_costmap:
       inflation_radius: 0.45
     always_send_full_costmap: True
 
-# waypoint_follower:
-#   ros__parameters:
-#     loop_rate: 5
-#     stop_on_failure: false
+waypoint_follower:
+  ros__parameters:
+    loop_rate: 5
+    stop_on_failure: false
+    global_frame_id: "map"
+
 #     waypoint_task_executor_plugin: "wait_at_waypoint"
 #     wait_at_waypoint:
 #       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
