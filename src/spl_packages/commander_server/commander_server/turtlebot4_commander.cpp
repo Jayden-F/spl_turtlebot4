@@ -235,9 +235,9 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
     const GoalHandleNavigateThroughPoses::WrappedResult &result) {
 
   std::map<rclcpp_action::ResultCode, std::string> status{
-      {rclcpp_action::ResultCode::SUCCEEDED, "success"},
+      {rclcpp_action::ResultCode::SUCCEEDED, "succeeded"},
       {rclcpp_action::ResultCode::ABORTED, "aborted"},
-      {rclcpp_action::ResultCode::CANCELED, "cancelled"},
+      {rclcpp_action::ResultCode::CANCELED, "canceled"},
       {rclcpp_action::ResultCode::UNKNOWN, "unknown"},
   };
 
