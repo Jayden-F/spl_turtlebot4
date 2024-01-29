@@ -86,6 +86,11 @@ commander_server::turtlebot4_commander::get_request() {
   std::string data =
       make_request(boost::beast::http::verb::get, "/", json_pose);
 
+  if (data.empty()) {
+    RCLCPP_INFO(this->get_logger(), "No data received");
+    return {};
+  }
+
   nlohmann::json json_received = nlohmann::json::parse(data);
 
   // read the position from the json in format [x, y, theta]
@@ -191,7 +196,8 @@ void commander_server::turtlebot4_commander::navigate_to_pose_send_goal(
       &commander_server::turtlebot4_commander::navigate_to_pose_result_callback,
       this, std::placeholders::_1);
 
-  navigate_through_poses_client_ptr_->async_send_goal(goal_msg, send_goal_options);
+  navigate_through_poses_client_ptr_->async_send_goal(goal_msg,
+                                                      send_goal_options);
 }
 
 void commander_server::turtlebot4_commander::
