@@ -2,77 +2,60 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import (DeclareLaunchArgument, GroupAction,
-                            IncludeLaunchDescription)
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import PushRosNamespace
+from launch_ros.actions import PushRosNamespace, Node
 
 
 def generate_launch_description():
-
     ARGUMENTS = [
         DeclareLaunchArgument(
-            'namespace',
-            default_value='',
-            description='Robot namespace'),
-
-        DeclareLaunchArgument('use_sim_time', default_value='false',
-                              choices=['true', 'false'],
-                              description='Use sim time')
+            "namespace", default_value="", description="Robot namespace"
+        ),
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="false",
+            choices=["true", "false"],
+            description="Use sim time",
+        ),
+        DeclareLaunchArgument("map", default_value="", description="map files"),
+        DeclareLaunchArgument(
+            "params_file", default_value="", description="nav2 params file"
+        ),
     ]
 
-    # Packages
-    namespace = LaunchConfiguration('namespace')
-    use_sim_time = LaunchConfiguration('use_sim_time')
+    params_file = LaunchConfiguration("params_file")
+    map_yaml_file = LaunchConfiguration("map")
 
-    path_planner_package = get_package_share_directory(
-        'path_planner_server')
+    nav2_bringup_share = get_package_share_directory("nav2_bringup")
 
-    # cartographer_slam_package = get_package_share_directory(
-    #     'cartographer_slam')
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="screen",
+        parameters=[
+            {
+                "-d": os.path.join(
+                    nav2_bringup_share, "/nav2_bringup/rviz/nav2_default_view.rviz"
+                )
+            }
+        ],
+    )
 
-    rviz_package = get_package_share_directory("rviz2_server")
-
-    turtlebot4_navigation_dir = get_package_share_directory(
-        "turtlebot4_navigation")
-
-    localization_dir = get_package_share_directory(
-        "localization_server")
-
-    # Launch Files
-    path_planner_launch = PathJoinSubstitution(
-        [path_planner_package, 'launch', 'pathplanner.launch.py'])
-
-    # cartographer_slam_launch = PathJoinSubstitution(
-    #     [cartographer_slam_package, 'launch', 'cartographer.launch.py'])
-
-    rviz_launch = PathJoinSubstitution(
-        [rviz_package, 'launch', 'spl_rviz2.launch.py'])
-
-    slam_toolbox_launch = PathJoinSubstitution([turtlebot4_navigation_dir, 'launch',
-                                       'slam.launch.py'])
-
-    localization_launch = PathJoinSubstitution([localization_dir, "launch", "localization.launch.py"])
-
-    # Actions
-    navigation =   IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([path_planner_launch]), launch_arguments={"namespace": namespace, "use_sim_time": use_sim_time}.items())
-
-    localization = IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([localization_launch]), launch_arguments={"namespace": namespace, "use_sim_time": use_sim_time}.items())
-
-
-    mapping = IncludeLaunchDescription(PythonLaunchDescriptionSource([slam_toolbox_launch]), launch_arguments={"namespace": namespace, "use_sim_time": use_sim_time}.items())
-
-
-    rviz = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([rviz_launch]), launch_arguments={})
+    nav2_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(nav2_bringup_share, "/launch/bringup_launch.py"),
+        ),
+        launch_arguments={
+            "map": map_yaml_file,
+            "params_file": params_file,
+        }.items(),
+    )
 
     ld = LaunchDescription(ARGUMENTS)
-    ld.add_action(navigation)
-    ld.add_action(localization)
-    # ld.add_action(mapping)
-    ld.add_action(rviz)
+    ld.add_action(rviz_node)
+    ld.add_action(nav2_launch)
 
     return ld
