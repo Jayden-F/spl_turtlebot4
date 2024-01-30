@@ -35,12 +35,12 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2",
         output="screen",
-        parameters=[
-            {
-                "-d": os.path.join(
+        arguments=[
+            [
+                "-d" + os.path.join(
                     nav2_bringup_share, "rviz", "nav2_default_view.rviz"
                 )
-            }
+            ]
         ],
     )
 
