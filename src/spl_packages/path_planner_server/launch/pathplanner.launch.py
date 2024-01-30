@@ -22,10 +22,10 @@ def generate_launch_description():
     ]
 
     remappings = [
-        ("/tf", "tf"),
-        ("/tf_static", "tf_static"),
-        ("/scan", "scan"),
-        ("/map", "map"),
+        # ("/tf", "tf"),
+        # ("/tf_static", "tf_static"),
+        # ("/scan", "scan"),
+        # ("/map", "map"),
     ]
 
     namespace = LaunchConfiguration("namespace")
