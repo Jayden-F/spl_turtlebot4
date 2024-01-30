@@ -14,5 +14,6 @@ jobs:
         uses: ichiro-its/ros2-ci@v1.0.0
         with:
           ros2-distro: humble
-          apt-packages: ros-humble-irobot-create-msgs
+          apt-packages: ros-humble-irobot-create-msgs ros-humble-navigation2 ros-humble-nav2-bringup ros-humble-turtlebot3*
+
 
