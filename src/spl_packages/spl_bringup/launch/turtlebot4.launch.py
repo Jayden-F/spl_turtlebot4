@@ -38,7 +38,7 @@ def generate_launch_description():
         parameters=[
             {
                 "-d": os.path.join(
-                    nav2_bringup_share, "/nav2_bringup/rviz/nav2_default_view.rviz"
+                    nav2_bringup_share, "rviz", "nav2_default_view.rviz"
                 )
             }
         ],
