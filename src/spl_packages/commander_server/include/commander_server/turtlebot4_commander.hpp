@@ -65,20 +65,20 @@ private:
 
   std::vector<PoseStamped> get_request();
 
-  void navigate_to_pose(std::vector<PoseStamped> poses);
+  void navigate_through_poses(std::vector<PoseStamped> poses);
 
   PoseStamped get_pose_stamped(float x, float y, float theta);
 
-  void navigate_to_pose_send_goal(std::vector<PoseStamped> poses);
+  void navigate_through_poses_send_goal(std::vector<PoseStamped> poses);
 
-  void navigate_to_pose_goal_response_callback(
+  void navigate_through_poses_goal_response_callback(
       const GoalHandleNavigateThroughPoses::SharedPtr goal_handle);
 
-  void navigate_to_pose_feedback_callback(
+  void navigate_through_poses_feedback_callback(
       GoalHandleNavigateThroughPoses::SharedPtr,
       const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback);
 
-  void navigate_to_pose_result_callback(
+  void navigate_through_poses_result_callback(
       const GoalHandleNavigateThroughPoses::WrappedResult &result);
 
   void pose_topic_callback(const PoseWithCovarianceStamped::SharedPtr msg);
