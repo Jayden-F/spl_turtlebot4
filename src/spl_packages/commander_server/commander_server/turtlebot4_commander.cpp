@@ -1,6 +1,7 @@
 #include "commander_server/turtlebot4_commander.hpp"
 #include <boost/beast/core/error.hpp>
 #include <rclcpp/logging.hpp>
+#include <rclcpp/utilities.hpp>
 
 commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
@@ -264,8 +265,10 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
 
   nlohmann::json payload = json_post_format(pose_, "succeeded");
   make_request(boost::beast::http::verb::post, "/extend_path", payload);
-  pose_subscriber_ptr_.reset();
 
+rclcpp::sleep_for(std::chrono::milliseconds(5000));
+
+  pose_subscriber_ptr_.reset();
   reset_state();
 }
 
