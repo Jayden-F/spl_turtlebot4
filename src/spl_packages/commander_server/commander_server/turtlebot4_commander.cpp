@@ -7,7 +7,7 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
       pose_(), stream_(ioc_, boost::asio::ip::tcp::v4()), is_executing_(1),
-      timestep_(-1), remaining_poses_(-1) {
+      timestep_(-1), remaining_poses_(0) {
 
   RCLCPP_INFO(
       this->get_logger(),
@@ -176,6 +176,7 @@ void commander_server::turtlebot4_commander::navigate_through_poses_send_goal(
 
   auto goal_msg = NavigateThroughPoses::Goal();
   goal_msg.poses = poses;
+  remaining_poses_ = poses.size();
 
   navigate_through_poses_client_ptr_->wait_for_action_server();
 
