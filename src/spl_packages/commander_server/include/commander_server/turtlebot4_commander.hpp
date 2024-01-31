@@ -1,7 +1,6 @@
 #ifndef TURTLEBOT4_COMMANDER_HPP
 #define TURTLEBOT4_COMMANDER_HPP
 
-#include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "nav2_msgs/action/navigate_through_poses.hpp"
@@ -23,7 +22,6 @@ namespace commander_server {
 
 #define PI 3.14159265
 
-using Pose = geometry_msgs::msg::Pose;
 using PoseStamped = geometry_msgs::msg::PoseStamped;
 using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
 using NavigateThroughPoses = nav2_msgs::action::NavigateThroughPoses;
@@ -41,7 +39,7 @@ private:
   const std::string ip_;
   const uint16_t port_;
   const uint32_t id_;
-  Pose pose_;
+  PoseStamped pose_;
   rclcpp_action::Client<NavigateThroughPoses>::SharedPtr
       navigate_through_poses_client_ptr_;
   rclcpp::Subscription<PoseWithCovarianceStamped>::SharedPtr
@@ -60,7 +58,7 @@ private:
   std::string make_request(boost::beast::http::verb verb, std::string target,
                            nlohmann::json body);
 
-  nlohmann::json json_post_format(Pose pose, std::string status,
+  nlohmann::json json_post_format(PoseStamped pose, std::string status,
                                   uint32_t pose_number);
 
   std::vector<PoseStamped> get_request();
@@ -69,7 +67,7 @@ private:
 
   PoseStamped get_pose_stamped(float x, float y, float theta);
 
-  void navigate_through_poses_send_goal(std::vector<PoseStamped> poses);
+  void navigate_through_poses_send_goal(std::vector<PoseStamped>& poses);
 
   void navigate_through_poses_goal_response_callback(
       const GoalHandleNavigateThroughPoses::SharedPtr goal_handle);
