@@ -146,7 +146,6 @@ void commander_server::turtlebot4_commander::navigate_through_poses(
     std::vector<PoseStamped> poses) {
   RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
-
   for (uint32_t i = 0; i < poses.size(); i++) {
     PoseStamped &pose = poses[i];
     RCLCPP_INFO(this->get_logger(), "Pose %d, (%f, %f, %f)", i,
@@ -163,8 +162,8 @@ commander_server::turtlebot4_commander::get_pose_stamped(float x, float y,
                                                          float theta) {
 
   PoseStamped pose;
-  pose.header.frame_id = "map";
   pose.header.stamp = this->get_clock()->now();
+  pose.header.frame_id = std::string("map");
 
   pose.pose.position.x = x;
   pose.pose.position.y = y;

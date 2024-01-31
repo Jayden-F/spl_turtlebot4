@@ -63,7 +63,7 @@ private:
 
   std::vector<PoseStamped> get_request();
 
-  void navigate_through_poses(std::vector<PoseStamped> poses);
+  void navigate_through_poses(std::vector<PoseStamped>& poses);
 
   PoseStamped get_pose_stamped(float x, float y, float theta);
 
