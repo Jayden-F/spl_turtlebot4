@@ -49,7 +49,8 @@ private:
   boost::beast::tcp_stream stream_;
   rclcpp::TimerBase::SharedPtr timer_;
   bool is_executing_;
-  uint32_t num_poses_;
+  int32_t timestep_;
+  int32_t remaining_poses_;
 
   void reset_state();
 
@@ -58,8 +59,7 @@ private:
   std::string make_request(boost::beast::http::verb verb, std::string target,
                            nlohmann::json body);
 
-  nlohmann::json json_post_format(PoseStamped pose, std::string status,
-                                  uint32_t pose_number);
+  nlohmann::json json_post_format(PoseStamped pose, std::string status);
 
   std::vector<PoseStamped> get_request();
 

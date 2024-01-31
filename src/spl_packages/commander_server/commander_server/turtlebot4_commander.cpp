@@ -7,7 +7,7 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
       pose_(), stream_(ioc_, boost::asio::ip::tcp::v4()), is_executing_(1),
-      num_poses_(0) {
+      timestep_(-1), remaining_poses_(-1) {
 
   RCLCPP_INFO(
       this->get_logger(),
@@ -41,7 +41,6 @@ void commander_server::turtlebot4_commander::connect_central_controller() {
 
 void commander_server::turtlebot4_commander::reset_state() {
   is_executing_ = false;
-  num_poses_ = 0;
 }
 
 std::string commander_server::turtlebot4_commander::make_request(
@@ -116,8 +115,9 @@ commander_server::turtlebot4_commander::get_request() {
 // TODO split how json is created for different post request paths /
 // /extend_plan
 // /
-nlohmann::json commander_server::turtlebot4_commander::json_post_format(
-    PoseStamped pose, std::string status, uint32_t pose_number) {
+nlohmann::json
+commander_server::turtlebot4_commander::json_post_format(PoseStamped pose,
+                                                         std::string status) {
 
   nlohmann::json json_pose = nlohmann::json::object();
   json_pose["agent_id"] = id_;
@@ -128,16 +128,12 @@ nlohmann::json commander_server::turtlebot4_commander::json_post_format(
 
   nlohmann::json plans = nlohmann::json::array({json_pose});
 
-  nlohmann::json progress = nlohmann::json::object();
-  progress["current"] = pose_number;
-  progress["total"] = num_poses_;
-
   nlohmann::json payload = nlohmann::json::object();
   payload["agent_id"] = id_;
   payload["status"] = status;
   payload["position"] = json_pose;
   payload["plans"] = plans;
-  payload["progress"] = progress;
+  payload["timestep"] = timestep_;
 
   return payload;
 }
@@ -180,7 +176,6 @@ void commander_server::turtlebot4_commander::navigate_through_poses_send_goal(
 
   auto goal_msg = NavigateThroughPoses::Goal();
   goal_msg.poses = poses;
-  num_poses_ = poses.size();
 
   navigate_through_poses_client_ptr_->wait_for_action_server();
 
@@ -222,16 +217,19 @@ void commander_server::turtlebot4_commander::
         const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback) {
 
   pose_ = feedback->current_pose;
-  uint32_t progress = num_poses_ - feedback->number_of_poses_remaining;
 
-  RCLCPP_INFO(this->get_logger(),
-              "Received feedback: %f, %f, %f Progress: %d/%d",
+  if (remaining_poses_ != feedback->number_of_poses_remaining) {
+    timestep_ += remaining_poses_ - feedback->number_of_poses_remaining;
+    remaining_poses_ = feedback->number_of_poses_remaining;
+  }
+
+  RCLCPP_INFO(this->get_logger(), "Received feedback: %f, %f, %f",
               feedback->current_pose.pose.position.x,
               feedback->current_pose.pose.position.y,
-              feedback->current_pose.pose.orientation.z, progress, num_poses_);
+              feedback->current_pose.pose.orientation.z);
 
   nlohmann::json payload =
-      json_post_format(feedback->current_pose, "executing", progress);
+      json_post_format(feedback->current_pose, "executing");
   make_request(boost::beast::http::verb::post, "/", payload);
 }
 
@@ -249,7 +247,7 @@ void commander_server::turtlebot4_commander::
   RCLCPP_INFO(this->get_logger(), "Goal Status: %s",
               status[result.code].c_str());
 
-  nlohmann::json payload = json_post_format(pose_, status[result.code], 0);
+  nlohmann::json payload = json_post_format(pose_, status[result.code]);
   make_request(boost::beast::http::verb::post, "/", payload);
   reset_state();
 }
@@ -263,7 +261,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   pose_.pose.position.y = msg->pose.pose.position.y;
   pose_.pose.orientation.z = msg->pose.pose.orientation.z;
 
-  nlohmann::json payload = json_post_format(pose_, "succeeded", 1);
+  nlohmann::json payload = json_post_format(pose_, "succeeded");
   make_request(boost::beast::http::verb::post, "/extend_path", payload);
   pose_subscriber_ptr_.reset();
 
