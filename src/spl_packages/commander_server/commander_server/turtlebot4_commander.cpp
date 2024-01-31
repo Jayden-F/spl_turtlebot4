@@ -146,7 +146,6 @@ void commander_server::turtlebot4_commander::navigate_through_poses(
     std::vector<PoseStamped> poses) {
   RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
-  poses.insert(poses.begin(), pose_);
 
   for (uint32_t i = 0; i < poses.size(); i++) {
     PoseStamped &pose = poses[i];
@@ -183,8 +182,6 @@ void commander_server::turtlebot4_commander::navigate_through_poses_send_goal(
   auto goal_msg = NavigateThroughPoses::Goal();
   goal_msg.poses = poses;
   num_poses_ = poses.size();
-  // TODO: verify if we have to specify behaviour tree
-  goal_msg.behavior_tree = "";
 
   navigate_through_poses_client_ptr_->wait_for_action_server();
 
