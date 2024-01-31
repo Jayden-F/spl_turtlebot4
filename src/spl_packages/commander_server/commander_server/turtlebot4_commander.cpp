@@ -143,7 +143,7 @@ nlohmann::json commander_server::turtlebot4_commander::json_post_format(
 }
 
 void commander_server::turtlebot4_commander::navigate_through_poses(
-    std::vector<PoseStamped> poses) {
+    std::vector<PoseStamped> &poses) {
   RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
   for (uint32_t i = 0; i < poses.size(); i++) {
