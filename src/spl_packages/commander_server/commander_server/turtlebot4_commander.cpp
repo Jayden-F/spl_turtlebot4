@@ -263,12 +263,11 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   RCLCPP_INFO(this->get_logger(), "Pose: %f, %f, %f", msg->pose.pose.position.x,
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
-  PoseStamped pose = PoseStamped();
-  pose.pose.position.x = msg->pose.pose.position.x;
-  pose.pose.position.y = msg->pose.pose.position.y;
-  pose.pose.orientation.z = msg->pose.pose.orientation.z;
+  pose_.pose.position.x = msg->pose.pose.position.x;
+  pose_.pose.position.y = msg->pose.pose.position.y;
+  pose_.pose.orientation.z = msg->pose.pose.orientation.z;
 
-  nlohmann::json payload = json_post_format(pose, "succeeded", 1);
+  nlohmann::json payload = json_post_format(pose_, "succeeded", 1);
   make_request(boost::beast::http::verb::post, "/extend_path", payload);
   pose_subscriber_ptr_.reset();
 
