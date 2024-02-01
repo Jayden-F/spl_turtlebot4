@@ -6,16 +6,20 @@
 #include "nav2_msgs/action/navigate_through_poses.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "nav2_util/geometry_utils.hpp"
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/beast.hpp>
+#include <boost/beast/core/error.hpp>
 #include <boost/beast/http/message.hpp>
 #include <boost/program_options.hpp>
 #include <cstdint>
 #include <map>
 #include <math.h>
 #include <nlohmann/json.hpp>
+#include <rclcpp/logging.hpp>
+#include <rclcpp/utilities.hpp>
 #include <string>
 
 namespace commander_server {
@@ -63,11 +67,11 @@ private:
 
   std::vector<PoseStamped> get_request();
 
-  void navigate_through_poses(std::vector<PoseStamped>& poses);
+  void navigate_through_poses(std::vector<PoseStamped> &poses);
 
   PoseStamped get_pose_stamped(float x, float y, float theta);
 
-  void navigate_through_poses_send_goal(std::vector<PoseStamped>& poses);
+  void navigate_through_poses_send_goal(std::vector<PoseStamped> &poses);
 
   void navigate_through_poses_goal_response_callback(
       const GoalHandleNavigateThroughPoses::SharedPtr goal_handle);

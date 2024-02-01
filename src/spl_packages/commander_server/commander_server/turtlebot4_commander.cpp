@@ -1,7 +1,4 @@
 #include "commander_server/turtlebot4_commander.hpp"
-#include <boost/beast/core/error.hpp>
-#include <rclcpp/logging.hpp>
-#include <rclcpp/utilities.hpp>
 
 commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
@@ -160,14 +157,13 @@ commander_server::turtlebot4_commander::get_pose_stamped(float x, float y,
 
   PoseStamped pose;
   pose.header.stamp = this->get_clock()->now();
-  pose.header.frame_id = std::string("map");
+  pose.header.frame_id = "map";
 
   pose.pose.position.x = x;
   pose.pose.position.y = y;
 
-  float rads = theta * (PI / 180);
-  pose.pose.orientation.z = sin(rads / 2);
-  pose.pose.orientation.w = cos(rads / 2);
+  pose.pose.orientation =
+      nav2_util::geometry_utils::orientionAroundZAxis(theta);
 
   return pose;
 }
@@ -266,7 +262,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   nlohmann::json payload = json_post_format(pose_, "succeeded");
   make_request(boost::beast::http::verb::post, "/extend_path", payload);
 
-rclcpp::sleep_for(std::chrono::milliseconds(5000));
+  rclcpp::sleep_for(std::chrono::milliseconds(5000));
 
   pose_subscriber_ptr_.reset();
   reset_state();
