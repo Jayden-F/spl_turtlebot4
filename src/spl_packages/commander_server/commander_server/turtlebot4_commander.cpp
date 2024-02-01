@@ -4,8 +4,9 @@ commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
     : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      pose_(), stream_(ioc_, boost::asio::ip::tcp::v4()), is_executing_(1),
-      timestep_(-1), remaining_poses_(0) {
+      pose_(), stream_(ioc_, boost::asio::ip::tcp::v4()), is_executing_(false),
+     started_(false), timestep_(-1), remaining_poses_(0) {
+
 
   RCLCPP_INFO(
       this->get_logger(),
@@ -252,6 +253,11 @@ void commander_server::turtlebot4_commander::
 
 void commander_server::turtlebot4_commander::pose_topic_callback(
     const PoseWithCovarianceStamped::SharedPtr msg) {
+  if (started_) {
+    return;
+  }
+  started_ = true;
+
   RCLCPP_INFO(this->get_logger(), "Pose: %f, %f, %f", msg->pose.pose.position.x,
               msg->pose.pose.position.y, msg->pose.pose.orientation.z);
 
@@ -261,10 +267,6 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
 
   nlohmann::json payload = json_post_format(pose_, "succeeded");
   make_request(boost::beast::http::verb::post, "/extend_path", payload);
-
-  rclcpp::sleep_for(std::chrono::milliseconds(5000));
-
-  pose_subscriber_ptr_.reset();
   reset_state();
 }
 

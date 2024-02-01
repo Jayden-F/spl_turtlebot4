@@ -53,6 +53,7 @@ private:
   boost::beast::tcp_stream stream_;
   rclcpp::TimerBase::SharedPtr timer_;
   bool is_executing_;
+  bool started_;
   int32_t timestep_;
   int32_t remaining_poses_;
 
