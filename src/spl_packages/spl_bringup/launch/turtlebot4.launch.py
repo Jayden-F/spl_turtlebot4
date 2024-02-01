@@ -6,6 +6,7 @@ from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDesc
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import PushRosNamespace, Node
+from launch.conditions import IfCondition
 
 
 def generate_launch_description():
@@ -13,6 +14,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "namespace", default_value="", description="Robot namespace"
         ),
+        DeclareLaunchArgument("rviz", default_value="True", description="start rviz"),
         DeclareLaunchArgument(
             "use_sim_time",
             default_value="false",
@@ -27,20 +29,18 @@ def generate_launch_description():
 
     params_file = LaunchConfiguration("params_file")
     map_yaml_file = LaunchConfiguration("map")
+    rviz_condition = LaunchConfiguration("rviz")
 
     nav2_bringup_share = get_package_share_directory("nav2_bringup")
 
     rviz_node = Node(
+        condition=IfCondition(rviz_condition),
         package="rviz2",
         executable="rviz2",
         name="rviz2",
         output="screen",
         arguments=[
-            [
-                "-d" + os.path.join(
-                    nav2_bringup_share, "rviz", "nav2_default_view.rviz"
-                )
-            ]
+            ["-d" + os.path.join(nav2_bringup_share, "rviz", "nav2_default_view.rviz")]
         ],
     )
 
