@@ -32,6 +32,7 @@ find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(irobot_create_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(nav2_util REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
@@ -42,6 +43,7 @@ rclcpp_action
 irobot_create_msgs
 nav2_msgs
 diagnostic_msgs
+nav2_util
 )
 
 include_directories(${Boost_INCLUDE_DIRS})

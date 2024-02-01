@@ -163,7 +163,7 @@ commander_server::turtlebot4_commander::get_pose_stamped(float x, float y,
   pose.pose.position.y = y;
 
   pose.pose.orientation =
-      nav2_util::geometry_utils::orientionAroundZAxis(theta);
+      nav2_util::geometry_utils::orientationAroundZAxis(theta);
 
   return pose;
 }
