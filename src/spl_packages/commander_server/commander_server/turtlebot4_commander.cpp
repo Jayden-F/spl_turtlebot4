@@ -247,7 +247,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
               status[result.code].c_str());
 
   nlohmann::json payload =
-      json_post_format(pose_, status[result.code], poses_.size());
+      json_post_format(pose_, status[result.code], end_timestep_);
   make_request(boost::beast::http::verb::post, "/", payload);
   reset_state();
 }
