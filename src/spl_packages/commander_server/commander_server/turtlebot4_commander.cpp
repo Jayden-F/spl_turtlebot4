@@ -58,19 +58,18 @@ std::string commander_server::turtlebot4_commander::make_request(
   connect_central_controller();
 
   http::write(stream_, req, ec);
-  //RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
+  // RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   http::response<http::string_body> res;
 
   // Receive the HTTP response
-  //RCLCPP_INFO(this->get_logger(), "Reading Response");
+  // RCLCPP_INFO(this->get_logger(), "Reading Response");
   http::read(stream_, buffer_, res, ec);
-  //RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
+  // RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   stream_.socket().close();
-  //RCLCPP_INFO(this->get_logger(), "Converting to string");
-   std::string data = boost::beast::buffers_to_string(res.body());
-  //RCLCPP_INFO(this->get_logger(), "%s", res.body().c_str());
+  // RCLCPP_INFO(this->get_logger(), "Converting to string");
+  // RCLCPP_INFO(this->get_logger(), "%s", res.body().c_str());
 
   return res.body();
 }
@@ -96,8 +95,9 @@ void commander_server::turtlebot4_commander::request_next_poses() {
   // read the position from the json in format [x, y, theta]
   std::vector<nlohmann::json> json_positions = json_received["positions"];
 
-  //std::cout << json_positions << ',' << json_positions << json_positions.size()
-            //<< std::endl;
+  // std::cout << json_positions << ',' << json_positions <<
+  // json_positions.size()
+  //<< std::endl;
 
   poses_.resize(json_positions.size());
 
