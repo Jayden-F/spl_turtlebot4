@@ -58,19 +58,19 @@ std::string commander_server::turtlebot4_commander::make_request(
   connect_central_controller();
 
   http::write(stream_, req, ec);
-  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
+  //RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   http::response<http::string_body> res;
 
   // Receive the HTTP response
-  RCLCPP_INFO(this->get_logger(), "Reading Response");
+  //RCLCPP_INFO(this->get_logger(), "Reading Response");
   http::read(stream_, buffer_, res, ec);
-  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
+  //RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   stream_.socket().close();
-  RCLCPP_INFO(this->get_logger(), "Converting to string");
-  // std::string data = boost::beast::buffers_to_string(res.body());
-  RCLCPP_INFO(this->get_logger(), "%s", res.body().c_str());
+  //RCLCPP_INFO(this->get_logger(), "Converting to string");
+   std::string data = boost::beast::buffers_to_string(res.body());
+  //RCLCPP_INFO(this->get_logger(), "%s", res.body().c_str());
 
   return res.body();
 }
@@ -96,8 +96,8 @@ void commander_server::turtlebot4_commander::request_next_poses() {
   // read the position from the json in format [x, y, theta]
   std::vector<nlohmann::json> json_positions = json_received["positions"];
 
-  std::cout << json_positions << ',' << json_positions << json_positions.size()
-            << std::endl;
+  //std::cout << json_positions << ',' << json_positions << json_positions.size()
+            //<< std::endl;
 
   poses_.resize(json_positions.size());
 
@@ -145,7 +145,6 @@ void commander_server::turtlebot4_commander::navigate_to_pose() {
                 pose.pose.position.x, pose.pose.position.y,
                 pose.pose.orientation.z);
   }
-  RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
   navigate_to_pose_send_goal(poses_);
 }
@@ -217,22 +216,22 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
   for (uint32_t i = current_progress_ + 1; i < poses_.size(); i++) {
     if (check_at_position(pose_, poses_[i], 0.3)) {
       current_progress_ = i;
-  std::string status = "succeeded";
+      status = "succeeded";
+
+      nlohmann::json payload =
+          json_post_format(feedback->current_pose, status,
+                           end_timestep_ + current_progress_ - poses_.size());
+      make_request(boost::beast::http::verb::post, "/", payload);
       break;
     }
   }
 
-  RCLCPP_INFO(this->get_logger(),
-              "Received feedback: %f, %f, %f, Progress: %d/%zu",
-              feedback->current_pose.pose.position.x,
-              feedback->current_pose.pose.position.y,
-              feedback->current_pose.pose.orientation.z, current_progress_,
-              poses_.size());
-
-  nlohmann::json payload =
-      json_post_format(feedback->current_pose, status,
-                       end_timestep_ + current_progress_ - poses_.size());
-  make_request(boost::beast::http::verb::post, "/", payload);
+  RCLCPP_ERROR(this->get_logger(),
+               "Received feedback: %f, %f, %f, Progress: %d/%zu",
+               feedback->current_pose.pose.position.x,
+               feedback->current_pose.pose.position.y,
+               feedback->current_pose.pose.orientation.z, current_progress_,
+               poses_.size());
 }
 
 void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
