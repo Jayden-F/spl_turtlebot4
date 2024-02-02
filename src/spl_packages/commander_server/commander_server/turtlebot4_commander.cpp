@@ -114,9 +114,8 @@ void commander_server::turtlebot4_commander::request_next_poses() {
   current_progress_ = 0;
 }
 
-nlohmann::json
-commander_server::turtlebot4_commander::json_post_format(PoseStamped pose,
-                                                         std::string status) {
+nlohmann::json commander_server::turtlebot4_commander::json_post_format(
+    PoseStamped pose, std::string status, uint32_t timestep) {
 
   nlohmann::json json_pose = nlohmann::json::object();
   json_pose["agent_id"] = id_;
@@ -132,7 +131,7 @@ commander_server::turtlebot4_commander::json_post_format(PoseStamped pose,
   payload["status"] = status;
   payload["position"] = json_pose;
   payload["plans"] = plans;
-  payload["timestep"] = end_timestep_ + current_progress_ - poses_.size();
+  payload["timestep"] = timestep;
 
   return payload;
 }
@@ -229,7 +228,8 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
               poses_.size());
 
   nlohmann::json payload =
-      json_post_format(feedback->current_pose, "executing");
+      json_post_format(feedback->current_pose, "executing",
+                       end_timestep_ + current_progress_ - poses_.size());
   make_request(boost::beast::http::verb::post, "/", payload);
 }
 
@@ -246,7 +246,8 @@ void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
   RCLCPP_INFO(this->get_logger(), "Goal Status: %s",
               status[result.code].c_str());
 
-  nlohmann::json payload = json_post_format(pose_, status[result.code]);
+  nlohmann::json payload =
+      json_post_format(pose_, status[result.code], poses_.size());
   make_request(boost::beast::http::verb::post, "/", payload);
   reset_state();
 }
@@ -265,7 +266,7 @@ void commander_server::turtlebot4_commander::pose_topic_callback(
   pose_.pose.position.y = msg->pose.pose.position.y;
   pose_.pose.orientation.z = msg->pose.pose.orientation.z;
 
-  nlohmann::json payload = json_post_format(pose_, "succeeded");
+  nlohmann::json payload = json_post_format(pose_, "succeeded", 0);
   make_request(boost::beast::http::verb::post, "/extend_path", payload);
   reset_state();
 }

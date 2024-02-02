@@ -70,7 +70,7 @@ private:
   std::string make_request(boost::beast::http::verb verb, std::string target,
                            nlohmann::json body);
 
-  nlohmann::json json_post_format(PoseStamped pose, std::string status);
+  nlohmann::json json_post_format(PoseStamped pose, std::string status, uint32_t timestep);
 
   void request_next_poses();
 
