@@ -217,6 +217,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
   for (uint32_t i = current_progress_; i < poses_.size(); i++) {
     if (check_at_position(pose_, poses_[i], 0.3)) {
       current_progress_ = i;
+      break;
     }
   }
 

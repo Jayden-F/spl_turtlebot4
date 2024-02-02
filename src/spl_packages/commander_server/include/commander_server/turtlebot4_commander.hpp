@@ -44,7 +44,7 @@ private:
   bool is_executing_;
   bool started_;
   int32_t end_timestep_;
-  int32_t current_progress_;
+  uint32_t current_progress_;
   PoseStamped pose_;
   std::vector<PoseStamped> poses_;
 
