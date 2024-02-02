@@ -110,7 +110,7 @@ void commander_server::turtlebot4_commander::request_next_poses() {
 
     poses_[i] = get_pose_stamped(x, y, theta);
   }
-  end_timestep_ = json_received["timestep"].get<int32_t>();
+  end_timestep_ = json_received["end_timestep"].get<int32_t>();
   current_progress_ = 0;
 }
 
