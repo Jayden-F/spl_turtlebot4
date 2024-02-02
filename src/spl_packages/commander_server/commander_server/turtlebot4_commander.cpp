@@ -1,21 +1,21 @@
 #include "commander_server/turtlebot4_commander.hpp"
+#include <cstdint>
 
 commander_server::turtlebot4_commander::turtlebot4_commander(
     const uint32_t id, const std::string &ip, const uint16_t port,
     const rclcpp::NodeOptions &options)
-    : Node("Turtlebot4_Commander", options), ip_(ip), port_(port), id_(id),
-      pose_(), stream_(ioc_, boost::asio::ip::tcp::v4()), is_executing_(false),
-     started_(false), timestep_(-1), remaining_poses_(0) {
-
+    : Node("Turtlebot4_Commander", options), is_executing_(true),
+      started_(false), end_timestep_(-1), current_progress_(0), pose_(),
+      poses_(0), ip_(ip), port_(port), id_(id),
+      stream_(ioc_, boost::asio::ip::tcp::v4()) {
 
   RCLCPP_INFO(
       this->get_logger(),
       "Starting turtlebot4_commander\n Agent ID: %d\n IP: %s\n Port: %d", id_,
       ip_.c_str(), port_);
 
-  navigate_through_poses_client_ptr_ =
-      rclcpp_action::create_client<NavigateThroughPoses>(
-          this, "/navigate_through_poses");
+  navigate_to_pose_client_ptr_ =
+      rclcpp_action::create_client<NavigateToPose>(this, "/navigate_to_pose");
 
   pose_subscriber_ptr_ = create_subscription<PoseWithCovarianceStamped>(
       "/amcl_pose", 10,
@@ -58,14 +58,14 @@ std::string commander_server::turtlebot4_commander::make_request(
   connect_central_controller();
 
   http::write(stream_, req, ec);
-  RCLCPP_INFO(this->get_logger(), ec.message().c_str());
+  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   http::response<http::string_body> res;
 
   // Receive the HTTP response
   RCLCPP_INFO(this->get_logger(), "Reading Response");
   http::read(stream_, buffer_, res, ec);
-  RCLCPP_INFO(this->get_logger(), ec.message().c_str());
+  RCLCPP_INFO(this->get_logger(), "%s", ec.message().c_str());
 
   stream_.socket().close();
   RCLCPP_INFO(this->get_logger(), "Converting to string");
@@ -75,8 +75,7 @@ std::string commander_server::turtlebot4_commander::make_request(
   return res.body();
 }
 
-std::vector<commander_server::PoseStamped>
-commander_server::turtlebot4_commander::get_request() {
+void commander_server::turtlebot4_commander::request_next_poses() {
 
   RCLCPP_INFO(this->get_logger(),
               "Requesting positions from central controller");
@@ -89,31 +88,32 @@ commander_server::turtlebot4_commander::get_request() {
 
   if (data.empty()) {
     RCLCPP_INFO(this->get_logger(), "No data received");
-    return {};
+    return;
   }
 
   nlohmann::json json_received = nlohmann::json::parse(data);
 
   // read the position from the json in format [x, y, theta]
-  std::vector<nlohmann::json> positions = json_received["positions"];
+  std::vector<nlohmann::json> json_positions = json_received["positions"];
 
-  std::cout << positions << ',' << positions << positions.size() << std::endl;
+  std::cout << json_positions << ',' << json_positions << json_positions.size()
+            << std::endl;
 
-  std::vector<PoseStamped> poses(positions.size());
+  poses_.resize(json_positions.size());
 
-  for (std::vector<nlohmann::json> pose : positions) {
-    float x = pose[0].get<float>();
-    float y = pose[1].get<float>();
-    int theta = pose[2].get<int>();
+  for (uint32_t i = 0; i < poses_.size(); i++) {
+    nlohmann::json &json_position = json_positions[i];
 
-    poses.push_back(get_pose_stamped(x, y, theta));
+    float x = json_position[0].get<float>();
+    float y = json_position[1].get<float>();
+    int theta = json_position[2].get<int>();
+
+    poses_[i] = get_pose_stamped(x, y, theta);
   }
-  return poses;
+  end_timestep_ = json_received["timestep"].get<int32_t>();
+  current_progress_ = 0;
 }
 
-// TODO split how json is created for different post request paths /
-// /extend_plan
-// /
 nlohmann::json
 commander_server::turtlebot4_commander::json_post_format(PoseStamped pose,
                                                          std::string status) {
@@ -132,24 +132,23 @@ commander_server::turtlebot4_commander::json_post_format(PoseStamped pose,
   payload["status"] = status;
   payload["position"] = json_pose;
   payload["plans"] = plans;
-  payload["timestep"] = timestep_;
+  payload["timestep"] = end_timestep_ + current_progress_ - poses_.size();
 
   return payload;
 }
 
-void commander_server::turtlebot4_commander::navigate_through_poses(
-    std::vector<PoseStamped> &poses) {
+void commander_server::turtlebot4_commander::navigate_to_pose() {
   RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
-  for (uint32_t i = 0; i < poses.size(); i++) {
-    PoseStamped &pose = poses[i];
+  for (uint32_t i = 0; i < poses_.size(); i++) {
+    PoseStamped &pose = poses_[i];
     RCLCPP_INFO(this->get_logger(), "Pose %d, (%f, %f, %f)", i,
                 pose.pose.position.x, pose.pose.position.y,
                 pose.pose.orientation.z);
   }
   RCLCPP_INFO(this->get_logger(), "Sending Waypoints to Robot");
 
-  navigate_through_poses_send_goal(poses);
+  navigate_to_pose_send_goal(poses_);
 }
 
 commander_server::PoseStamped
@@ -169,37 +168,34 @@ commander_server::turtlebot4_commander::get_pose_stamped(float x, float y,
   return pose;
 }
 
-void commander_server::turtlebot4_commander::navigate_through_poses_send_goal(
+void commander_server::turtlebot4_commander::navigate_to_pose_send_goal(
     std::vector<PoseStamped> &poses) {
 
-  auto goal_msg = NavigateThroughPoses::Goal();
-  goal_msg.poses = poses;
-  remaining_poses_ = poses.size();
+  auto goal_msg = NavigateToPose::Goal();
+  goal_msg.pose = poses.back();
 
-  navigate_through_poses_client_ptr_->wait_for_action_server();
+  navigate_to_pose_client_ptr_->wait_for_action_server();
 
   auto send_goal_options =
-      rclcpp_action::Client<NavigateThroughPoses>::SendGoalOptions();
+      rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
   send_goal_options.goal_response_callback =
       std::bind(&commander_server::turtlebot4_commander::
-                    navigate_through_poses_goal_response_callback,
+                    navigate_to_pose_goal_response_callback,
                 this, std::placeholders::_1);
   send_goal_options.feedback_callback =
       std::bind(&commander_server::turtlebot4_commander::
-                    navigate_through_poses_feedback_callback,
+                    navigate_to_pose_feedback_callback,
                 this, std::placeholders::_1, std::placeholders::_2);
-  send_goal_options.result_callback =
-      std::bind(&commander_server::turtlebot4_commander::
-                    navigate_through_poses_result_callback,
-                this, std::placeholders::_1);
+  send_goal_options.result_callback = std::bind(
+      &commander_server::turtlebot4_commander::navigate_to_pose_result_callback,
+      this, std::placeholders::_1);
 
-  navigate_through_poses_client_ptr_->async_send_goal(goal_msg,
-                                                      send_goal_options);
+  navigate_to_pose_client_ptr_->async_send_goal(goal_msg, send_goal_options);
 }
 
 void commander_server::turtlebot4_commander::
-    navigate_through_poses_goal_response_callback(
-        const GoalHandleNavigateThroughPoses::SharedPtr goal_handle) {
+    navigate_to_pose_goal_response_callback(
+        const GoalHandleNavigateToPose::SharedPtr goal_handle) {
 
   if (!goal_handle) {
     RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
@@ -210,31 +206,34 @@ void commander_server::turtlebot4_commander::
   }
 }
 
-void commander_server::turtlebot4_commander::
-    navigate_through_poses_feedback_callback(
-        GoalHandleNavigateThroughPoses::SharedPtr,
-        const std::shared_ptr<const NavigateThroughPoses::Feedback> feedback) {
+void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
+    GoalHandleNavigateToPose::SharedPtr,
+    const std::shared_ptr<const NavigateToPose::Feedback> feedback) {
 
   pose_ = feedback->current_pose;
 
-  if (remaining_poses_ != feedback->number_of_poses_remaining) {
-    timestep_ += remaining_poses_ - feedback->number_of_poses_remaining;
-    remaining_poses_ = feedback->number_of_poses_remaining;
+  // I am sorry, we were unable to get navigate through poses to consistently
+  // accept requests.
+  for (uint32_t i = current_progress_; i < poses_.size(); i++) {
+    if (check_at_position(pose_, poses_[i], 0.3)) {
+      current_progress_ = i;
+    }
   }
 
-  RCLCPP_INFO(this->get_logger(), "Received feedback: %f, %f, %f",
+  RCLCPP_INFO(this->get_logger(),
+              "Received feedback: %f, %f, %f, Progress: %d/%zu",
               feedback->current_pose.pose.position.x,
               feedback->current_pose.pose.position.y,
-              feedback->current_pose.pose.orientation.z);
+              feedback->current_pose.pose.orientation.z, current_progress_,
+              poses_.size());
 
   nlohmann::json payload =
       json_post_format(feedback->current_pose, "executing");
   make_request(boost::beast::http::verb::post, "/", payload);
 }
 
-void commander_server::turtlebot4_commander::
-    navigate_through_poses_result_callback(
-        const GoalHandleNavigateThroughPoses::WrappedResult &result) {
+void commander_server::turtlebot4_commander::navigate_to_pose_result_callback(
+    const GoalHandleNavigateToPose::WrappedResult &result) {
 
   std::map<rclcpp_action::ResultCode, std::string> status{
       {rclcpp_action::ResultCode::SUCCEEDED, "succeeded"},
@@ -277,13 +276,27 @@ void commander_server::turtlebot4_commander::polling_callback() {
   };
 
   is_executing_ = true;
-  std::vector<PoseStamped> poses = get_request();
-  navigate_through_poses(poses);
+
+  request_next_poses();
+  navigate_to_pose();
 }
 
-namespace po = boost::program_options;
+bool commander_server::turtlebot4_commander::check_at_position(
+    PoseStamped current, PoseStamped target, float threshold_metres) {
+  if (abs(current.pose.position.x - target.pose.position.x) >
+      threshold_metres) {
+    return false;
+  }
+  if (abs(current.pose.position.y - target.pose.position.y) >
+      threshold_metres) {
+    return false;
+  }
+  return true;
+}
 
 int main(int argc, char **argv) {
+
+  namespace po = boost::program_options;
 
   std::string address;
   uint16_t port;
