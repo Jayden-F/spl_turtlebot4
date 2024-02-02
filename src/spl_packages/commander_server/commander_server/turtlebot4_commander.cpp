@@ -213,9 +213,11 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
 
   // I am sorry, we were unable to get navigate through poses to consistently
   // accept requests.
-  for (uint32_t i = current_progress_; i < poses_.size(); i++) {
+  std::string status = "executing";
+  for (uint32_t i = current_progress_ + 1; i < poses_.size(); i++) {
     if (check_at_position(pose_, poses_[i], 0.3)) {
       current_progress_ = i;
+  std::string status = "succeeded";
       break;
     }
   }
@@ -228,7 +230,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
               poses_.size());
 
   nlohmann::json payload =
-      json_post_format(feedback->current_pose, "executing",
+      json_post_format(feedback->current_pose, status,
                        end_timestep_ + current_progress_ - poses_.size());
   make_request(boost::beast::http::verb::post, "/", payload);
 }
