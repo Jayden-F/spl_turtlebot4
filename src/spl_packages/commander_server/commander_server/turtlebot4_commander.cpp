@@ -214,7 +214,7 @@ void commander_server::turtlebot4_commander::navigate_to_pose_feedback_callback(
   // accept requests.
   std::string status = "executing";
   for (uint32_t i = current_progress_ + 1; i < poses_.size(); i++) {
-    if (check_at_position(pose_, poses_[i], 0.3)) {
+    if (check_at_position(pose_, poses_[i], 0.2)) {
       current_progress_ = i;
       status = "succeeded";
 
